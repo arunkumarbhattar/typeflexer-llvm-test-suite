@@ -1,9 +1,10 @@
 /* For copyright information, see olden_v1.0/COPYRIGHT */
 
 #include "mst.h"
+#pragma CHECKED_SCOPE ON
 
 /*#define assert(num,a) \
-   if (!(a)) {printf("Assertion failure:%d in makegraph\n",num); exit(-1);}*/
+   if (!(a)) unchecked {printf("Assertion failure:%d in makegraph\n",num); exit(-1);}*/
 
 #define CONST_m1 10000
 #define CONST_b 31415821
@@ -41,30 +42,31 @@ static int hashfunc(unsigned int key)
 static void AddEdges(int count1, Graph retval, int numproc, 
                      int perproc, int numvert, int j) 
 {
-  Vertex tmp;
-  Vertex helper[MAXPROC];
+  Vertex tmp = NULL;
+  VertexArray helper checked[MAXPROC] = {0};
   int i;
 
   for (i=0; i<numproc; i++) {
     helper[i] = retval->vlist[i];
   }
 
-  for (tmp = retval->vlist[j]; tmp; tmp=tmp->next) 
+  _Unchecked { tmp = retval->vlist[j].starting_vertex; }
+  for (; tmp; tmp=tmp->next)
     {
       for (i=0; i<numproc*perproc; i++) 
         {
           int pn,offset,dist;
-          Vertex dest;
-          Hash hash;
+          Vertex dest = NULL;
+          Hash hash = NULL;
           
           if (i!=count1) 
             {
               dist = compute_dist(i,count1,numvert);
               pn = i/perproc;
               offset = i % perproc;
-              dest = ((helper[pn])+offset);
+              _Unchecked { dest = ((helper[pn].block)+offset); }
               hash = tmp->edgehash;
-              HashInsert((void *) dist,(unsigned int) dest,hash);
+              unchecked { HashInsert((void*)dist,(unsigned int) dest,hash); }
               /*assert(4, HashLookup((unsigned int) dest,hash) == (void*) dist);*/
             }
         } /* for i... */
@@ -77,29 +79,34 @@ Graph MakeGraph(int numvert, int numproc)
   int perproc = numvert/numproc;
   int i,j;
   int count1;
-  Vertex v,tmp;
-  Vertex block;
-  Graph retval;
-  retval = (Graph)malloc(sizeof(*retval));
+  Vertex v = NULL, tmp = NULL;
+  array_ptr<struct vert_st> block : count(perproc) = NULL;
+  Graph retval = NULL;
+
+  retval = calloc<struct graph_st>(1, sizeof(*retval));
   for (i=0; i<MAXPROC; i++) 
     {
-      retval->vlist[i]=NULL;
+      retval->vlist[i].starting_vertex = NULL;
     }
   chatting("Make phase 2\n");
   for (j=numproc-1; j>=0; j--) 
     {
-      block = (Vertex) malloc(perproc*(sizeof(*tmp)));
+      block = calloc<struct vert_st>(perproc, sizeof(*tmp));
       v = NULL;
       for (i=0; i<perproc; i++) 
         {
-          tmp = block+(perproc-i-1);
+          _Unchecked { tmp = block+(perproc-i-1); }
           HashRange = numvert/4;
           tmp->mindist = 9999999;
           tmp->edgehash = MakeHash(numvert/4,hashfunc);
           tmp->next = v;
-          v=tmp;
+          v = tmp;
         }
-      retval->vlist[j] = v;
+      _Unchecked {
+        retval->vlist[j].len = perproc,
+          retval->vlist[j].block = block,
+          retval->vlist[j].starting_vertex = v;
+      }
     }
 
   chatting("Make phase 3\n");
@@ -114,7 +121,9 @@ Graph MakeGraph(int numvert, int numproc)
   return retval;
 }
 
-  
+void chatting(nt_array_ptr<char> str) {
+  printf("%s", str);
+}
 
 
 

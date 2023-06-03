@@ -2,18 +2,22 @@
 
 /* =============== NODE STRUCTURE =================== */
 
+#include <stdchecked.h>
+
+#pragma CHECKED_SCOPE ON
+
 struct node { 
   int value;
-  struct node *left;
-  struct node *right;
+  ptr<struct node> left;
+  ptr<struct node> right;
 };
 
 typedef struct node HANDLE;
 
 typedef struct future_cell_int{
-  HANDLE *value;
+  ptr<HANDLE> value;
 } future_cell_int;
 
-extern void *malloc(unsigned);
+#define NIL ((ptr<HANDLE>) 0)
 
-#define NIL ((HANDLE *) 0)
+#pragma CHECKED_SCOPE OFF

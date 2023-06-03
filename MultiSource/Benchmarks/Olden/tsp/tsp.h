@@ -1,29 +1,41 @@
+#include <stdio_checked.h>
+#include <stdlib_checked.h>
+#include <string_checked.h>
+#include <stdchecked.h>
+
+#pragma CHECKED_SCOPE ON
+
 #ifdef TORONTO
 /* Toronto's hack */
-#define ALLOC(p, sz)      malloc(sz)
-#define chatting          printf  
+#define ALLOC(p, sz)      calloc(1, sz)
+#define ALLOC(T, p, sz)      calloc<T>(1, sz)
+#define chatting(...) _Unchecked { printf(__VA_ARGS__); } 
 extern int NumNodes, NDim;
 #endif
 
 extern int flag;
 
-int atoi(const char *);
-int dealwithargs(int argc, char *argv[]);
+int atoi(const char * : itype(nt_array_ptr<const char>));
+int dealwithargs(int argc, array_ptr<nt_array_ptr<char>> argv : count(argc));
 
-  
 /* For copyright information, see olden_v1.0/COPYRIGHT */
 
-typedef struct tree {
+struct tree {
   int sz;
   double x,y;
-  struct tree *left, *right;
+  ptr<struct tree> left;
+  ptr<struct tree> right;
 #ifdef TORONTO
-  struct tree *next, *prev;
+  ptr<struct tree> next;
+  ptr<struct tree> prev;
 #else
-  struct tree *next {95}, *prev {95};
+  ptr<struct tree> next {95};
+  ptr<struct tree> prev {95};
 #endif
 
-} *Tree;
+};
+
+typedef ptr<struct tree> Tree;
 
 #ifdef ORDER
 
@@ -55,4 +67,4 @@ Tree tsp(Tree t, int sz, int nproc);
 
 
 
-
+#pragma CHECKED_SCOPE OFF

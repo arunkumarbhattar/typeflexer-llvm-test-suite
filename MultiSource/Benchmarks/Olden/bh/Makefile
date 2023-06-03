@@ -2,7 +2,6 @@ LEVEL = ../../../..
 
 PROG     = bh
 CPPFLAGS = -fcommon -DTORONTO
-CFLAGS += -Wno-implicit-int
 LDFLAGS  = -lm
 ifdef LARGE_PROBLEM_SIZE
 RUN_OPTIONS = 40000 30

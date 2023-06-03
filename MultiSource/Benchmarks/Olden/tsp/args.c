@@ -2,6 +2,9 @@
 
 #include <fcntl.h>
 #include "tsp.h"
+
+#pragma CHECKED_SCOPE ON
+
 int NumNodes, NDim;
 int flag;
 
@@ -11,9 +14,9 @@ int mylog(int num)
   
   while(k<num) { k*=2; j++; }
   return j;
-} 
+}
 
-int dealwithargs(int argc, char *argv[])
+int dealwithargs(int argc, array_ptr<nt_array_ptr<char>> argv : count(argc))
 {
   int num;
 

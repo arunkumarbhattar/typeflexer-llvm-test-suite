@@ -21,7 +21,8 @@
 #include "hcg.h"
 #include "channel.h"
 
-
+#pragma CHECKED_SCOPE ON
+#define printf(...) _Unchecked { printf(__VA_ARGS__); }
 /*
  *
  * Code.
@@ -31,17 +32,17 @@
 void
 AllocHCG(void)
 {
-    HCG = (nodeHCGType *)malloc((channelNets + 1) * sizeof(nodeHCGType));
-    storageRootHCG = (ulong *)malloc((channelNets + 1) * (channelNets + 1) * sizeof(ulong));
-    storageHCG = storageRootHCG;
+    HCG = malloc<nodeHCGType>((channelNets + 1) * sizeof(nodeHCGType));
+    storageRootHCG = malloc<ulong>((channelNets + 1) * (channelNets + 1) * sizeof(ulong));
+    _Unchecked { storageHCG = storageRootHCG; }
     storageLimitHCG = (channelNets + 1) * (channelNets + 1);
 }
 
 void
 FreeHCG(void)
 {
-    free(HCG);
-    free(storageRootHCG);
+    _Unchecked { free<nodeHCGType>(HCG); }
+    _Unchecked { free<ulong>(storageRootHCG); }
     storageLimitHCG = 0;
 }
 
@@ -68,7 +69,8 @@ BuildHCG(void)
 	first = FIRST[net];
 	last = LAST[net];
 	constraint = 0;
-	HCG[net].netsHook = storageHCG;
+	HCG[net].nets = constraint;
+	_Unchecked { HCG[net].netsHook = storageHCG; }
 	for (which = 1; which <= channelNets; which++) {
 	    if (((FIRST[which] < first) && (LAST[which] < first)) || ((FIRST[which] > last) && (LAST[which] > last))) {
 		/*
@@ -95,6 +97,7 @@ BuildHCG(void)
 		 * Add constraint.
 		 */
 		assert(storageLimitHCG > 0);
+		HCG[net].nets = constraint;
 		HCG[net].netsHook[constraint] = which;
 		storageHCG++;
 		storageLimitHCG--;
@@ -106,7 +109,7 @@ BuildHCG(void)
 }
 
 void
-DFSClearHCG(nodeHCGType * HCG)
+DFSClearHCG(_Array_ptr<nodeHCGType> HCG : count(channelNets + 1))
 {
     ulong	net;
 
@@ -116,7 +119,7 @@ DFSClearHCG(nodeHCGType * HCG)
 }
 
 void
-DumpHCG(nodeHCGType * HCG)
+DumpHCG(_Array_ptr<nodeHCGType> HCG : count(channelNets + 1))
 {
     ulong	net;
     ulong	which;
@@ -131,10 +134,10 @@ DumpHCG(nodeHCGType * HCG)
 }
 
 void
-NoHCV(nodeHCGType * HCG,
+NoHCV(_Array_ptr<nodeHCGType> HCG : count(channelNets + 1),
       ulong select,
-      ulong * netsAssign,
-      ulong * tracksNoHCV)
+      _Array_ptr<ulong> netsAssign : count(channelNets + 1),
+      _Array_ptr<ulong> tracksNoHCV : count(channelTracks + 2))
 {
     ulong	track;
     ulong	net;

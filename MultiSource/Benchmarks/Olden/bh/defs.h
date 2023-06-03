@@ -7,7 +7,7 @@
  */
 
 #ifdef TORONTO
-#include <stdio.h>
+#include <stdio_checked.h>
 #define chatting printf
 #define PLAIN
 #define LOCAL(xxx) xxx
@@ -26,9 +26,12 @@ int NumNodes;
 #define THREEDIM
 #include "vectmath.h"
 
-#define MAX_NUM_NODES 64
-extern double fabs();
+#pragma CHECKED_SCOPE ON
 
+#define MAX_NUM_NODES 64
+extern double fabs(double);
+
+#define printf(...) _Unchecked { printf(__VA_ARGS__); }
 
 /*
  * BODY and CELL data structures are used to represent the tree:
@@ -62,9 +65,10 @@ typedef struct node{
     int proc;                   /* parent's processor number */
     int new_proc;               /* processor where this node will reside */
 #ifdef JUMP
-    struct node * next_few_node;
+    _Ptr<struct node> next_few_node;
 #endif
-} node, *nodeptr;
+} node;
+typedef _Ptr<struct node> nodeptr;
 
 /***
 #define Type(x) (((nodeptr) (x))->type)
@@ -85,7 +89,7 @@ typedef struct node{
 
 #define BODY 01                 /* type code for bodies */
 
-typedef struct bnode *bodyptr;
+typedef _Ptr<struct bnode> bodyptr;
 
 typedef struct bnode {
     short type;
@@ -94,7 +98,7 @@ typedef struct bnode {
     int proc;            /* parent's processor number */
     int new_proc;
 #ifdef JUMP
-    struct node * next_few_node;
+    _Ptr<struct node> next_few_node;
 #endif
     vector vel;                 /* velocity of body */
     vector acc;			/* acceleration of body */
@@ -127,7 +131,7 @@ typedef struct bnode {
 
 #define NSUB (1 << NDIM)        /* subcells per cell */
 
-typedef struct cnode *cellptr; 
+typedef _Ptr<struct cnode> cellptr; 
 
 typedef struct cnode {
     short type;
@@ -136,9 +140,9 @@ typedef struct cnode {
     int proc;
     int new_proc;
 #ifdef JUMP
-    struct node * next_few_node;
+    _Ptr<struct node> next_few_node;
 #endif
-    nodeptr subp[NSUB];         /* descendents of cell */
+    nodeptr subp _Checked[NSUB];         /* descendents of cell */
     cellptr next;               /* for free list */
 
 } cell;
@@ -152,12 +156,13 @@ typedef struct cnode {
 #define FL_Next(x) ((x)->next)
 
 typedef struct {
-  real rmin[3];               
+  real rmin _Checked[3];               
   real rsize;
   nodeptr root;
-  bodyptr bodytab[MAX_NUM_NODES];
-  bodyptr bodiesperproc[MAX_NUM_NODES];
-} tree, *treeptr;
+  bodyptr bodytab _Checked[MAX_NUM_NODES];
+  bodyptr bodiesperproc _Checked[MAX_NUM_NODES];
+} tree;
+typedef _Ptr<tree> treeptr;
 
 #define Root(t) ((t)->root)
 #define Rmin(t) ((t)->rmin)
@@ -168,23 +173,24 @@ typedef struct {
 
 
 
-typedef struct {
+struct {
   real tnow;
   real tout;
   int nsteps;
-} timerecord, *timeptr;
+} timerecord;
+typedef _Ptr<struct timerecord> timeptr;
 
 #define Tnow(t) ((t)->tnow)
 #define Tout(t) ((t)->tout)
 #define Nsteps(t) ((t)->nsteps)
 
 typedef struct {
-  int xp[NDIM];
+  int xp _Checked[NDIM];
   bool inb;
 } icstruct;
 
 typedef struct {
-  double v[NDIM];
+  double v _Checked[NDIM];
 } vecstruct;
     
 
@@ -222,10 +228,10 @@ global real xxxrsize;		/* side-length of integer coordinate box    */
 
 typedef struct {
   real mtot;                /* total mass of N-body system */
-  real etot[3];             /* binding, kinetic, potential energy */
+  real etot _Checked[3];             /* binding, kinetic, potential energy */
   matrix keten;		/* kinetic energy tensor */
   matrix peten;		/* potential energy tensor */
-  vector cmphase[2];	/* center of mass coordinates */
+  vector cmphase _Checked[2];	/* center of mass coordinates */
   vector amvec;		/* angular momentum vector */
 } ostruct;
 
@@ -244,5 +250,5 @@ extern int nbody;
 
 
 
-
+#pragma CHECKED_SCOPE OFF
 

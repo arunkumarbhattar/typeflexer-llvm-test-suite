@@ -15,6 +15,7 @@
 #ifndef OPTION_H
 #define OPTION_H
 
+#pragma CHECKED_SCOPE ON
 
 /*
  *
@@ -52,15 +53,16 @@
 #ifdef OPTION_CODE
 
 void
-Option(int,
-       char (*[]));
+Option(int argc,
+       _Array_ptr<_Nt_array_ptr<char>> : count(argc));
 
 #else	/* OPTION_CODE */
 
 extern void
-Option(int,
-       char (*[]));
+Option(int argc,
+       _Array_ptr<_Nt_array_ptr<char>> : count(argc));
 
 #endif	/* OPTION_CODE */
 
+#pragma CHECKED_SCOPE OFF
 #endif	/* OPTION_H */

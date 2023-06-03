@@ -6,6 +6,7 @@
  * 	    It's free because it's yours.
  */
 
+#pragma CHECKED_SCOPE ON
 
 /* Former global variables.  convert to #defines   */
 
@@ -20,7 +21,7 @@
 
 extern int nbody;
 
-
+#pragma CHECKED_SCOPE OFF
 
 
            

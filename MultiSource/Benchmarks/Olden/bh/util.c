@@ -9,6 +9,8 @@
 #include "stdinc.h"
 #include <errno.h>
 
+#pragma CHECKED_SCOPE ON
+
 #define A	16807.0
 #define M	2147483647.0
 
@@ -20,7 +22,7 @@ void exit(int);
 double my_rand(double seed)
 {
     double	t = A*seed  + 1; 
-    double floor();
+    double floor(double);
 
 
     seed = t - (M * floor(t / M));
@@ -46,7 +48,7 @@ double xrand(double xl, double xh, double r)
  * ERROR: scream and die quickly.
  */
 
-error(char *msg)
+error(char *msg : itype(_Nt_array_ptr<char>)) _Unchecked
 {
     fprintf(stderr, msg);
     if (errno != 0)

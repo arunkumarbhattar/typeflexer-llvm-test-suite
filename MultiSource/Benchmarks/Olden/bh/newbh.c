@@ -12,11 +12,11 @@
 #include "defs.h"
 #include "code.h"
 
+#pragma CHECKED_SCOPE ON
 
 int nbody;
 
-double sqrt(), xrand(), my_rand();
-real pow();
+double sqrt(double), xrand(double, double, double), my_rand(double);
 extern icstruct intcoord(bodyptr p, treeptr t);
 extern int BhDebug;
 
@@ -35,10 +35,10 @@ typedef struct {
 } datapoints;
 
 
-bodyptr testdata();
+bodyptr testdata(void);
 datapoints uniform_testdata(int proc, int nbody, int seedfactor);
 void stepsystem(treeptr t, int nstep);
-treeptr old_main();
+treeptr old_main(void);
 void my_free(nodeptr n);
 bodyptr ubody_alloc(int p);
 bodyptr movebodies(bodyptr list, int proc);
@@ -46,14 +46,14 @@ void freetree(nodeptr n);
 void freetree1(nodeptr n);
 int old_subindex(icstruct ic, int l);
 
-int dealwithargs();
-int error();
+int dealwithargs(int argc, _Array_ptr<_Nt_array_ptr<char>> argv : count(argc));
+int error(char *msg : itype(_Nt_array_ptr<char>));
 
 int arg1;
 
 /* Used to setup runtime system, get arguments-- see old_main */
-int main(int argc, char **argv) {
-  treeptr t;
+int main(int argc, _Array_ptr<_Nt_array_ptr<char>> argv : count(argc)) {
+  treeptr t = NULL;
 
   /* Initialize the runtime system */
   dealwithargs(argc, argv);
@@ -66,23 +66,23 @@ int main(int argc, char **argv) {
 /* global! */
 
 /* Main routine from original program */
-treeptr old_main() {
+treeptr old_main(void) {
   real tnow;
   real tout;
   int i, nsteps, nprocs;
-  treeptr t;
-  bodyptr bt0,p;
+  treeptr t = NULL;
+  bodyptr bt0 = NULL, p = NULL;
   long t1, t2;
   vector cmr, cmv;
   bodyptr prev=NULL;
   int tmp=0, range=((1<<NDIM) << NDIM) / NumNodes;
-  int bodiesper[MAX_NUM_NODES];
-  bodyptr ptrper[MAX_NUM_NODES];
+  int bodiesper _Checked[MAX_NUM_NODES];
+  bodyptr ptrper _Checked[MAX_NUM_NODES] = {0};
 
   srand(123);					/*   set random generator   */
 
 /* Tree data structure is global, points to root, and bodylist, has size info */
-  t = (treeptr)malloc(sizeof(tree));
+  t = malloc<tree>(sizeof(tree));
   Root(t) = NULL;
   t->rmin[0] = -2.0;
   t->rmin[1] = -2.0;
@@ -95,7 +95,7 @@ treeptr old_main() {
 /* Creates a list of bodies */
   for (i=0; i < 32; i++)
     {
-    datapoints points;
+    datapoints points = { 0.0 };
     int processor= i/(32/NumNodes);
 
     points=uniform_testdata(processor, nbody/32, i+1);
@@ -191,11 +191,11 @@ treeptr old_main() {
 #define MFRAC  0.999		/* mass cut off at MFRAC of total */
 
 /* don't use this unless it is fixed on random numbers, &c */
-bodyptr testdata()
+bodyptr testdata(void)
 {
     real rsc, vsc, r, v, x, y;
     vector cmr, cmv;
-    bodyptr head, p, prev;
+    bodyptr head = NULL, p = NULL, prev = NULL;
     register int i;
     double temp, t1;
     double seed = 123.0;
@@ -282,9 +282,9 @@ bodyptr testdata()
 extern int EventCount;
 
 void stepsystem(treeptr t, int nstep) {
-  bodyptr bt, bt0, q;
+  bodyptr bt = NULL, bt0 = NULL, q = NULL;
   int i;
-  nodeptr root;
+  nodeptr root = NULL;
 
   int barge,cflctdiff,misstemp,diff;
   /*unsigned long t5, t1, t2, t3, t4; */
@@ -320,7 +320,7 @@ void freetree1(nodeptr n)
   
 void freetree(nodeptr n)
 {
-  register nodeptr r;
+  register nodeptr r = NULL;
   register int i;
   
   /*NOTEST();*/
@@ -329,7 +329,7 @@ void freetree(nodeptr n)
 
   /* Type(n) == CELL */
   for (i=NSUB-1; i >= 0; i--) {
-    r = Subp((cellptr) n)[i];
+    _Unchecked { r = Subp(_Assume_bounds_cast<cellptr>(n))[i]; }
     if (r != NULL) {
       freetree(r);
     }
@@ -339,8 +339,7 @@ void freetree(nodeptr n)
   RETEST();
 }
 
-
-nodeptr cp_free_list = NULL;
+cellptr cp_free_list = NULL;
 bodyptr bp_free_list = NULL;
 
 
@@ -348,20 +347,24 @@ bodyptr bp_free_list = NULL;
 void my_free(nodeptr n)
 {
   if (Type(n) == BODY) {
-    Next((bodyptr) n) = bp_free_list;
-    bp_free_list = (bodyptr) n;
+    bodyptr p = 0;
+    _Unchecked { p = _Assume_bounds_cast<bodyptr>(n); }
+    Next(p) = bp_free_list;
+    bp_free_list = p;
   }
   else /* CELL */ {
-    FL_Next((cellptr) n) = (cellptr) cp_free_list;
-    cp_free_list = n;
+    cellptr p = 0;
+    _Unchecked { p = _Assume_bounds_cast<cellptr>(n); }
+    FL_Next(p) = cp_free_list;
+    cp_free_list = p;
   }
 }
     
 
 bodyptr ubody_alloc(int p)
-{ register bodyptr tmp;
+{ register bodyptr tmp = NULL;
 
-  tmp = (bodyptr)malloc(sizeof(body));
+  tmp = malloc<body>(sizeof(body));
 
   Type(tmp) = BODY;
   Proc(tmp) = p;
@@ -373,16 +376,16 @@ bodyptr ubody_alloc(int p)
 
 
 cellptr cell_alloc(int p)
-{ register cellptr tmp;
+{ register cellptr tmp = NULL;
   register int i;
 
   if (cp_free_list != NULL) {
-    tmp = (cellptr) cp_free_list;
-    cp_free_list = (nodeptr) FL_Next((cellptr) cp_free_list);
+    tmp = cp_free_list;
+    cp_free_list = FL_Next(cp_free_list);
   }
   else 
     {
-      tmp = (cellptr)malloc(sizeof(cell));
+      tmp = malloc<cell>(sizeof(cell));
     }
   Type(tmp) = CELL;
   Proc(tmp) = p;
@@ -398,9 +401,9 @@ cellptr cell_alloc(int p)
 
 datapoints uniform_testdata(int proc, int nbodyx, int seedfactor)
 {
-  datapoints retval;
+  datapoints retval = { 0.0 };
   real rsc, vsc, r, v, x, y;
-  bodyptr head, p, prev;
+  bodyptr head = NULL, p = NULL, prev = NULL;
   register int i;
   double temp, t1;
   double seed = 123.0 * (double) seedfactor;
@@ -507,8 +510,8 @@ void computegrav(treeptr t, int nstep)
 {  register int i;
    real rsize;
    real dthf;
-   nodeptr root;
-   bodyptr blist;
+   nodeptr root = NULL;
+   bodyptr blist = NULL;
 
    /* loop over particles   */
    rsize = Rsize(t);
@@ -525,7 +528,7 @@ void computegrav(treeptr t, int nstep)
 
 void grav(real rsize, nodeptr rt, bodyptr bodies, int nstep, real dthf)
 {
-  register bodyptr p, q;
+  register bodyptr p = NULL, q = NULL;
   int i=0;
 
 
@@ -649,7 +652,7 @@ void gravstep(real rsize, nodeptr rt, bodyptr p, int nstep, real dthf)
 
 void hackgrav(bodyptr p, real rsize, nodeptr rt)
 {
-  hgstruct hg;
+  hgstruct hg = {0};
   real szsq;
 
   NOTEST();
@@ -728,7 +731,7 @@ hgstruct gravsub(nodeptr p, hgstruct hg)
 
  bool subdivp(nodeptr p, real dsq, real tolsq, hgstruct hg)
 {
-  register nodeptr local_p;
+  register nodeptr local_p = NULL;
   vector dr;
   vector pos;
   real drsq;
@@ -750,7 +753,7 @@ hgstruct gravsub(nodeptr p, hgstruct hg)
  * 	    It's free because it's yours.
  */
 
-double ceil();
+double ceil(double);
 
 bodyptr body_alloc(int p, real p0, real p1, real p2, real v0, real v1, real v2, real a0, real a1, real a2, real mass, bodyptr ob);
 bodyptr ubody_alloc(int p);
@@ -786,9 +789,9 @@ void dis_number (nodeptr n);
 
 nodeptr maketree(bodyptr btab, int nb, treeptr t, int nsteps, int proc)
 {  
-  register bodyptr q;
+  register bodyptr q = NULL;
   int tmp;
-  nodeptr node1;
+  nodeptr node1 = NULL;
   icstruct xqic;
   int holder;
 
@@ -836,8 +839,8 @@ void expandbox(bodyptr p, treeptr t, int nsteps, int proc)
     icstruct ic;
     int k;
     vector rmid;
-    cellptr  newt;
-    tree tmp;
+    cellptr  newt = NULL;
+    tree tmp = { 0.0 };
     real rsize;
     int inbox;
 
@@ -898,8 +901,8 @@ void expandbox(bodyptr p, treeptr t, int nsteps, int proc)
 nodeptr loadtree(bodyptr p, icstruct xpic, nodeptr t, int l, treeptr tr)
 {
   int si;
-  cellptr c;
-  nodeptr rt;
+  cellptr c = NULL;
+  nodeptr rt = NULL;
 
   if (t == NULL)
      {
@@ -915,15 +918,15 @@ nodeptr loadtree(bodyptr p, icstruct xpic, nodeptr t, int l, treeptr tr)
       /*printtree(t); printtree(p);*/
       i = PID(t);
       c = (cellptr) cell_alloc(i);
-      si = subindex((bodyptr) t, tr, l); 
+      _Unchecked { si = subindex(_Assume_bounds_cast<bodyptr>(t), tr, l);  }
      
       Subp(c)[si] = (nodeptr) t;        	/*     put body in cell     */
       t = (nodeptr) c;	        	/*     link cell in tree    */
     }
 
     si = old_subindex(xpic, l);     /* move down one level      */
-    rt = Subp((cellptr) t)[si];
-    Subp((cellptr) t)[si] = loadtree(p, xpic, rt, l >> 1, tr);
+    _Unchecked { rt = Subp(_Assume_bounds_cast<cellptr>(t))[si]; }
+    _Unchecked { Subp(_Assume_bounds_cast<cellptr>(t))[si] = loadtree(p, xpic, rt, l >> 1, tr); }
   }
   return (t);
 }
@@ -936,7 +939,7 @@ nodeptr loadtree(bodyptr p, icstruct xpic, nodeptr t, int l, treeptr tr)
 /* called from expandbox */
 icstruct intcoord1(double rp0, double rp1, double rp2, treeptr t)
 {
-    double xsc, floor();
+    double xsc, floor(double);
     /*double rmin,rsize;*/
     icstruct ic;
 
@@ -985,7 +988,7 @@ icstruct intcoord1(double rp0, double rp1, double rp2, treeptr t)
 icstruct intcoord(bodyptr p, treeptr t)
 {
     register double xsc;
-    double floor();
+    double floor(double);
     icstruct ic;
     register real rsize;
     vector pos;
@@ -1034,7 +1037,7 @@ icstruct intcoord(bodyptr p, treeptr t)
 
 int ic_test(bodyptr p, treeptr t)
 {
-    double xsc, rsize, floor();
+    double xsc, rsize, floor(double);
     int result;
     vector pos;
 
@@ -1083,8 +1086,8 @@ int subindex(bodyptr p, treeptr t , int l)
 {
     register int i, k;
     register real rsize;
-    double xsc, floor();
-    int xp[NDIM];
+    double xsc, floor(double);
+    int xp _Checked[NDIM];
     vector pos;
 
     pos[0] = Pos(p)[0];
@@ -1135,7 +1138,7 @@ int old_subindex(icstruct ic, int l)
 real hackcofm(nodeptr q)
 {
     register int i;
-    register nodeptr r;
+    register nodeptr r = NULL;
     vector tmpv;
     vector tmp_pos;
     register real mq, mr;
@@ -1145,7 +1148,7 @@ real hackcofm(nodeptr q)
       mq = 0.0;
       CLRV(tmp_pos);				/*   and c. of m.           */
       for (i=0; i < NSUB; i++) {
-	     r = Subp((cellptr) q)[i];
+	     _Unchecked { r = Subp(_Assume_bounds_cast<cellptr>(q))[i]; }
 	     if (r != NULL) {
 	       mr = hackcofm(r);
 	       mq = mr + mq;
@@ -1183,7 +1186,7 @@ void printtree(nodeptr n)
 
 void ptree(nodeptr n, int level)
 { 
-  nodeptr r;
+  nodeptr r = NULL;
   
   
   if (n != NULL) {
@@ -1195,7 +1198,7 @@ void ptree(nodeptr n, int level)
 
       chatting("%2d CELL@%x %f, %f, %f\n", level, n,Pos(n)[0], Pos(n)[1], Pos(n)[2]);
       for (i = 0; i < NSUB; i++) {
-	r = Subp((cellptr) n)[i];
+	_Unchecked { r = Subp(_Assume_bounds_cast<cellptr>(n))[i]; }
 	ptree(r, level+1);
       }
     }
@@ -1210,7 +1213,7 @@ typedef struct {
   int bits;
   int split;
   cellptr new; 
-  nodeptr non_local[NSUB];
+  nodeptr non_local _Checked[NSUB];
 } dt3_struct;
 
 
@@ -1234,11 +1237,11 @@ int dis2_number(nodeptr n, int prev_bodies, int tnperproc)
 
   else { /* cell */
     register int i;
-    register nodeptr r;
+    register nodeptr r = NULL;
 
     /*NOTEST();*/
     for (i=0; i < NSUB; i++) {
-      r = Subp((cellptr) n)[i];
+      _Unchecked { r = Subp(_Assume_bounds_cast<cellptr>(n))[i]; }
       prev_bodies = dis2_number(r, prev_bodies, tnperproc);
     }
 

@@ -1,6 +1,5 @@
 LEVEL=../../../..
 
-CFLAGS += -Wno-implicit-function-declaration
 PROG = anagram
 #OBJS = anagram.o
 RUN_OPTIONS = $(PROJ_SRC_DIR)/words 2
