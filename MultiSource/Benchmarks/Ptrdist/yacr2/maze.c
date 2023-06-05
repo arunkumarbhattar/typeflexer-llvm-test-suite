@@ -6,6 +6,8 @@
 
 #include "channel.h"
 #include "assign.h"
+#include <stdlib_tainted.h>
+#include <stdio_tainted.h>
 
 #pragma CHECKED_SCOPE ON
 #define printf(...) _Unchecked { printf(__VA_ARGS__); }
@@ -14,8 +16,9 @@
 #define min(a,b)	((a<b) ? a : b)
 #define max(a,b)	((a<b) ? b : a)
 
-#undef bzero
-void bzero(void * : byte_count(n), size_t n);
+void _T_bzero(_TPtr<void> s, size_t n) _Unchecked{
+	t_memset(s, 0, n);
+}
 
 /*
  *	plane allocation structures and routines
@@ -29,22 +32,22 @@ void bzero(void * : byte_count(n), size_t n);
 /* generic r/lvalue allocation map access macro */
 #define ACCESS_MAP(a, x, y)	a[(y)*channelColumns + (x)]
 
-static _Array_ptr<char> horzPlane : count((channelColumns+1)*(channelTracks+3));	/* horizontal plane allocation map */
+static _TPtr<char> horzPlane = NULL;	/* horizontal plane allocation map */
 
 /* r/lvalue for accessing horizontal plane allocation map */
 #define HORZ(x,y)	ACCESS_MAP(horzPlane, x, y)
 
-static _Array_ptr<char> vertPlane : count((channelColumns+1)*(channelTracks+3));	/* vertical plane allocation map */
+static _TPtr<char> vertPlane = NULL;	/* vertical plane allocation map */
 
 /* r/lvalue for accessing vertical plane allocation map */
 #define VERT(x,y)	ACCESS_MAP(vertPlane, x, y)
 
-static _Array_ptr<char> viaPlane : count((channelColumns+1)*(channelTracks+3));		/* via plane allocation map */
+static _TPtr<char> viaPlane = NULL;		/* via plane allocation map */
 
 /* r/lvalue for accessing via plane allocation map */
 #define VIA(x,y)	ACCESS_MAP(viaPlane, x, y)
 
-static _Array_ptr<char> mazeRoute : count(channelColumns+1);	/* true if the col needs to be maze routed */
+static _TPtr<char> mazeRoute = NULL;	/* true if the col needs to be maze routed */
 
 /*
  *	set up the plane allocation maps, note: the channel
@@ -55,10 +58,10 @@ void
 InitAllocMaps(void)
 {
     /* allocate maps */
-    horzPlane = malloc<char>((channelColumns+1)*(channelTracks+3));
-    vertPlane = malloc<char>((channelColumns+1)*(channelTracks+3));
-    viaPlane = malloc<char>((channelColumns+1)*(channelTracks+3));
-    mazeRoute = malloc<char>((channelColumns+1));
+    horzPlane = t_malloc<char>((channelColumns+1)*(channelTracks+3));
+    vertPlane = t_malloc<char>((channelColumns+1)*(channelTracks+3));
+    viaPlane = t_malloc<char>((channelColumns+1)*(channelTracks+3));
+    mazeRoute = t_malloc<char>((channelColumns+1));
 
 
     /* if (!horzPlane || !vertPlane || !viaPlane || !mazeRoute) { */
@@ -73,10 +76,10 @@ InitAllocMaps(void)
 void
 FreeAllocMaps(void)
 {
-    _Unchecked { free<char>(horzPlane); }
-    _Unchecked { free<char>(vertPlane); }
-    _Unchecked { free<char>(viaPlane); }
-    _Unchecked { free<char>(mazeRoute); }
+    _Unchecked { t_free<char>(horzPlane); }
+    _Unchecked { t_free<char>(vertPlane); }
+    _Unchecked { t_free<char>(viaPlane); }
+    _Unchecked { t_free<char>(mazeRoute); }
 }
 
 
@@ -89,7 +92,7 @@ FreeAllocMaps(void)
  *	they are sorted as needed by the line drawer
  */
 void
-DrawSegment(_Array_ptr<char> plane : count((channelColumns+1)*(channelTracks+2)),
+DrawSegment(_TPtr<char> plane,
 	    unsigned long x1, unsigned long y1,
 	    unsigned long x2, unsigned long y2)
 {
@@ -163,7 +166,7 @@ HasVia(unsigned long x, unsigned long y)
  *	they are sorted as needed by the line drawer
  */
 int
-SegmentFree(_Array_ptr<char> plane : count((channelColumns+1)*(channelTracks+2)),
+SegmentFree(_TPtr<char> plane,
 	    unsigned long x1, unsigned long y1,
 	    unsigned long x2, unsigned long y2)
 {
@@ -318,13 +321,13 @@ DrawNets(void)
     int numLeft = 0;
 
     /* initialize maps to empty */
-    _Unchecked { bzero(horzPlane,
+    _Unchecked { _T_bzero(horzPlane,
 	  (int)((channelColumns+1)*(channelTracks+2))); }
-    _Unchecked { bzero(vertPlane,
+    _Unchecked { _T_bzero(vertPlane,
 	  (int)((channelColumns+1)*(channelTracks+2))); }
-    _Unchecked { bzero(viaPlane,
+    _Unchecked { _T_bzero(viaPlane,
 	  (int)((channelColumns+1)*(channelTracks+2))); }
-    _Unchecked { bzero(mazeRoute,
+    _Unchecked { _T_bzero(mazeRoute,
 	  (int)(channelColumns+1)); }
 
     /* draw all horizontal segments */
@@ -650,7 +653,7 @@ Maze1(void)
  * can this track be extended to the range specified, return result
  */
 int
-ExtendOK(unsigned long net, _Array_ptr<char> plane : count((channelColumns + 1)*(channelTracks + 3)),
+ExtendOK(unsigned long net, _TPtr<char> plane,
 	 unsigned long _x1, unsigned long _y1,	/* start seg */
 	 unsigned long _x2, unsigned long _y2)	/* end seg */
 {
