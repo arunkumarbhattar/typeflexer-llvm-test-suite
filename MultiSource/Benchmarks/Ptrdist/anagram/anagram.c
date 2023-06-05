@@ -137,6 +137,8 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include "hacks.h"
+#include <stdlib_tainted.h>
+#include <stdio_tainted.h>
 
 jmp_buf jbAnagram;
 
@@ -206,7 +208,7 @@ typedef unsigned long Quad;             /* for building our bit mask */
 /* A Word remembers the information about a candidate word. */
 typedef struct {
     Quad aqMask _Checked [MAX_QUADS];  /* the word's mask */
-    _Array_ptr<char> pchWord : count(cchLength);                 /* the word itself */
+    _TPtr<char> pchWord;                 /* the word itself */
     unsigned cchLength;                 /* letters in the word */
 } Word;
 typedef _Ptr<Word> PWord;
@@ -248,7 +250,7 @@ unsigned auGlobalFrequency _Checked [ALPHABET];
 char achByFrequency _Checked [ALPHABET];          /* for sorting */
 
 unsigned long pchDictionarySize;
-_Array_ptr<char> pchDictionary : count(pchDictionarySize);               /* the dictionary is read here */
+_TPtr<char> pchDictionary = NULL;               /* the dictionary is read here */
 
 #define Zero(t) memset(t, 0, sizeof(t)) /* quickly zero out an integer array */
 #define fprintf(...) _Unchecked { fprintf(__VA_ARGS__); }
@@ -292,10 +294,10 @@ void ReadDict(_Nt_array_ptr<char> pchFile) {
 
     unsigned long ulLen;
     pchDictionarySize = ulLen = statBuf.st_size + 2 * (unsigned long)MAXWORDS;
-    _Array_ptr<char> buffer : count(ulLen) = 0;
-    _Array_ptr<char> pchBase : bounds(buffer, buffer+ulLen) = 0;
-    pchBase = buffer = pchDictionary = calloc<char>(pchDictionarySize, sizeof(char));
-    _Array_ptr<char> pch : bounds(buffer, buffer+ulLen) = 0;
+    _TPtr<char> buffer = 0;
+    _TPtr<char> pchBase  = 0;
+    pchBase = buffer = pchDictionary = t_malloc<char>(pchDictionarySize* sizeof(char));
+    _TPtr<char> pch = 0;
 
     if(pchDictionary == NULL)
 	Fatal("Unable to allocate memory for dictionary\n", 0);
@@ -398,6 +400,11 @@ void wprint(_Nt_array_ptr<char> pch) {
     printf("%s ", pch);
 }
 
+void _T_wprint(_TPtr<char> pch) _Unchecked{
+    t_printf("%s ", pch);
+}
+
+
 PWord NextWord(void);
 
 /* NextWord -- get another candidate entry, creating if necessary */
@@ -415,12 +422,11 @@ PWord NextWord(void) {
 /* BuildWord -- build a Word structure from an ASCII word
  * If the word does not fit, then do nothing.
  */
-void BuildWord(_Array_ptr<char> pchWord : bounds(wordStart, wordEnd),
-        _Array_ptr<char> wordStart, _Array_ptr<char> wordEnd) {
-    unsigned char cchFrequency _Checked [ALPHABET];
+void BuildWord(_TPtr<char> pchWord) {
+    unsigned char cchFrequency _Checked[ALPHABET];
     int i;
-    _Array_ptr<char> pch : bounds(wordStart, wordEnd) = pchWord;
-    PWord pw = 0;
+    _TPtr<char>  pch = pchWord;
+    PWord pw = NULL;
     int cchLength = 0;
 
     bzero(cchFrequency, sizeof(unsigned char)*ALPHABET);
@@ -431,7 +437,7 @@ void BuildWord(_Array_ptr<char> pchWord : bounds(wordStart, wordEnd),
         if (!isalpha(i)) continue;
         i = ch2i(tolower(i));
         if (++cchFrequency[i] > alPhrase[i].uFrequency)
-	    return;
+            return;
         ++cchLength;
     }
 
@@ -447,37 +453,32 @@ void BuildWord(_Array_ptr<char> pchWord : bounds(wordStart, wordEnd),
     pw = NextWord();
     bzero(pw->aqMask, sizeof(Quad)*MAX_QUADS);
     /* Zero(pw->aqMask); */
-    _Unchecked { pw->cchLength = cchLength, pw->pchWord = pchWord; }
+    pw->pchWord = pchWord;
+    pw->cchLength = cchLength;
     for (i = 0; i < ALPHABET; i++) {
         pw->aqMask[alPhrase[i].iq] |=
-            (Quad)cchFrequency[i] << alPhrase[i].uShift;
+                (Quad)cchFrequency[i] << alPhrase[i].uShift;
     }
 }
 
 /* AddWords -- build the list of candidates */
+/* AddWords -- build the list of candidates */
 void
 AddWords(void) {
-    _Array_ptr<char> pchLowerBounds = pchDictionary;
-    _Array_ptr<char> pchUpperBounds = pchDictionary + pchDictionarySize;
-    UncheckedBoundsInit(_Array_ptr<char>, pch, bounds(pchLowerBounds, pchUpperBounds), pchDictionary)     /* walk through the dictionary */
+    _TPtr<char>  pch = pchDictionary;     /* walk through the dictionary */
 
     cpwCand = 0;
 
     while (*pch) {
         if ((pch[1] >= cchMinLength && pch[1]+cchMinLength <= cchPhraseLength)
             || pch[1] == cchPhraseLength)
-        {
-            unsigned char wordLength = pch[0];
-            _Array_ptr<char> wordStart = pch;
-            _Array_ptr<char> wordEnd = pch+wordLength;
-            _Dynamic_check(wordEnd <= pchUpperBounds);
-            _Unchecked { BuildWord(pch+2, wordStart, wordEnd); }
-        }
+            BuildWord(pch+2);
         pch += *pch;
     }
 
     fprintf(stderr, "%d candidates\n", cpwCand);
 }
+
 
 void DumpCandidates(void) {
     unsigned u;
@@ -510,7 +511,7 @@ static int X;
   int i;
   X = (X+1) & 1023;
   if (X != 0) return;
-    for (i = 0; i < cpwLast; i++) _Unchecked { wprint((_Nt_array_ptr<char>)apwSol[i]->pchWord); }
+    for (i = 0; i < cpwLast; i++) _Unchecked { _T_wprint(apwSol[i]->pchWord); }
     printf("\n");
 }
 
