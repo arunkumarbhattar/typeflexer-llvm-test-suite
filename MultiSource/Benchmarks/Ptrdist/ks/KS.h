@@ -50,17 +50,17 @@ typedef struct _Net {
     _Ptr<struct _Net> next;
     unsigned long net;
 } Net;
-typedef _Ptr<Net> NetPtr;
+typedef _TPtr<Net> NetPtr;
 
 extern NetPtr modules _Checked [G_SZ];	/* all modules -> nets */
 extern unsigned long numModules;
 
 /* net-ular view */
-typedef struct _Module {
-    _Ptr<struct _Module> next;
+typedef Tstruct _Module {
+    _TPtr<Tstruct _Module> next;
     unsigned long module;
 } Module;
-typedef _Ptr<Module> ModulePtr;
+typedef _TPtr<Module> ModulePtr;
 
 extern ModulePtr nets _Checked [G_SZ];	/* all nets -> modules */
 extern unsigned long numNets;
@@ -69,7 +69,7 @@ typedef struct _ModuleRec {
     _Ptr<struct _ModuleRec> next;
     unsigned long module;
 } ModuleRec;
-typedef _Ptr<ModuleRec> ModuleRecPtr;
+typedef _TPtr<ModuleRec> ModuleRecPtr;
 
 typedef struct _ModuleList {
     ModuleRecPtr head;

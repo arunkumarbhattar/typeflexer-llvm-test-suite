@@ -32,7 +32,9 @@ int main(int argc, array_ptr<nt_array_ptr<char>> argv : count(argc))
 {
   int i;
   ptr<graph_t> graph = NULL;
-
+  _Unchecked{
+      int* tmp = malloc(1000);
+  tmp[100] = 10;}
   dealwithargs(argc,argv);
 
   chatting("Hello world--Doing em3d with args %d %d %d %d\n",

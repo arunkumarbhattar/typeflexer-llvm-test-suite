@@ -44,7 +44,7 @@ Hash MakeHash(int size, ptr<int(unsigned int)> map)
   return retval;
 }
 
-unchecked void *HashLookup(unsigned int key, Hash hash)
+unchecked _TPtr<void> HashLookup(unsigned int key, Hash hash)
 {
   int j;
   HashEntry ent = NULL;
@@ -60,7 +60,7 @@ unchecked void *HashLookup(unsigned int key, Hash hash)
   return NULL;
 }
 
-unchecked void HashInsert(void *entry,unsigned int key,Hash hash)
+unchecked void HashInsert(_TPtr<void> entry,unsigned int key,Hash hash)
 {
   HashEntry ent = NULL;
   int j;

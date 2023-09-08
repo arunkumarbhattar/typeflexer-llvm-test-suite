@@ -1,5 +1,0 @@
-set(CMAKE_CXX_STANDARD 14)
-set(RUN_OPTIONS < input)
-llvm_multisource(lambda)
-target_include_directories(lambda PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-llvm_test_data(lambda input)

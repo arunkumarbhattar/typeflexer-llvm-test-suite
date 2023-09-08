@@ -15,7 +15,10 @@
 #include "em3d.h"
 #include "util.h"
 #include <stdchecked.h>
+#include "stdlib_tainted.h"
 #include "hacks.h"
+
+
 #pragma CHECKED_SCOPE ON
 
 extern int NumNodes;
@@ -43,7 +46,7 @@ void fill_table(array_ptr<ptr<node_t>> node_table : count(size), array_ptr<doubl
   *values = gen_uniform_double();
   _Unchecked { prev_node->value = values++; }
   prev_node->from_values = _Dynamic_bounds_cast<array_ptr<ptr<double>>>(prev_node->from_values, count(0)),
-    prev_node->coeffs = _Dynamic_bounds_cast<array_ptr<double>>(prev_node->coeffs, count(0)),
+    prev_node->coeffs = prev_node->coeffs,
     prev_node->from_count = 0;
   
   /* Now we fill the node_table with allocated nodes */
@@ -52,7 +55,7 @@ void fill_table(array_ptr<ptr<node_t>> node_table : count(size), array_ptr<doubl
     *values = gen_uniform_double();
     _Unchecked { cur_node->value = values++; }
     cur_node->from_values = _Dynamic_bounds_cast<array_ptr<ptr<double>>>(cur_node->from_values, count(0)),
-      cur_node->coeffs = _Dynamic_bounds_cast<array_ptr<double>>(cur_node->coeffs, count(0)),
+      cur_node->coeffs = cur_node->coeffs,
       cur_node->from_count = 0;
     node_table[i] = cur_node;
     prev_node->next = cur_node;
@@ -138,11 +141,11 @@ void update_from_coeffs(ptr<node_t> nodelist) {
     if (from_count < 1) {
       chatting("Help! no from count (from_count=%d) \n", from_count);
       cur_node->from_values = calloc<ptr<double>>(20, sizeof(ptr<double>));
-      cur_node->coeffs = calloc<double>(20, sizeof(double));
+      cur_node->coeffs = t_calloc<double>(20, sizeof(double));
       cur_node->from_length = 0;
     } else {
-      cur_node->from_values = calloc<ptr<double>>(from_count, sizeof(ptr<double>));
-      cur_node->coeffs = calloc<double>(from_count, sizeof(double));
+      cur_node->from_values = malloc<ptr<double>>(from_count *sizeof(ptr<double>));
+      cur_node->coeffs = t_calloc<double>(from_count, sizeof(double));
       cur_node->from_length = 0;
     }
   }

@@ -66,7 +66,9 @@ static void AddEdges(int count1, Graph retval, int numproc,
               offset = i % perproc;
               _Unchecked { dest = ((helper[pn].block)+offset); }
               hash = tmp->edgehash;
-              unchecked { HashInsert((void*)dist,(unsigned int) dest,hash); }
+#pragma TLIB_SCOPE on
+                unchecked{ HashInsert((_TPtr<void>)dist,(unsigned int) dest,hash); }
+#pragma TLIB_SCOPE off
               /*assert(4, HashLookup((unsigned int) dest,hash) == (void*) dist);*/
             }
         } /* for i... */

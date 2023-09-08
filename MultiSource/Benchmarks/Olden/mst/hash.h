@@ -5,7 +5,7 @@
 
 struct hash_entry {
   unsigned int key;
-  void *entry;
+  _TPtr<void> entry;
   ptr<struct hash_entry> next;
 };
 
@@ -22,8 +22,8 @@ struct hash {
 typedef ptr<struct hash> Hash;
 
 Hash MakeHash(int size, ptr<int(unsigned int)> map);
-unchecked void *HashLookup(unsigned int key, Hash hash);
-unchecked void HashInsert(void *entry, unsigned int key, Hash hash);
+unchecked _TPtr<void> HashLookup(unsigned int key, Hash hash);
+unchecked void HashInsert(_TPtr<void> entry, unsigned int key, Hash hash);
 void HashDelete(unsigned int key, Hash hash);
 
 #pragma CHECKED_SCOPE OFF

@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include "power.h"
+#include <stdlib_tainted.h>
 
 #pragma CHECKED_SCOPE ON
 
@@ -29,11 +30,11 @@ static double Q=1.0;
 void optimize_node (double pi_R, double pi_I);
 double find_g (void);
 double find_h (void);
-double find_gradient_f (double pi_R, double pi_I, _Array_ptr<double> gradient : count(2));
-double find_gradient_g (_Array_ptr<double> gradient : count(2));
-double find_gradient_h (_Array_ptr<double> gradient : count(2));
-void find_dd_grad_f (double pi_R, double pi_I, _Array_ptr<double> dd_grad : count(2));
-double make_orthogonal (_Array_ptr<double> v_mod : count(2), _Array_ptr<double> v_static : count(2));
+double find_gradient_f (double pi_R, double pi_I, _TPtr<double> gradient );
+double find_gradient_g (_TPtr<double> gradient );
+double find_gradient_h (_TPtr<double> gradient );
+void find_dd_grad_f (double pi_R, double pi_I, _TPtr<double> dd_grad );
+double make_orthogonal (_TPtr<double> v_mod , _TPtr<double> v_static );
 
 
 void Compute_Tree(Root r) {
@@ -175,10 +176,10 @@ void optimize_node (double pi_R, double pi_I)
     double	    g;
     double	    h;
 
-    double	    grad_f _Checked[2];
-    double	    grad_g _Checked[2];
-    double	    grad_h _Checked[2];
-    double	    dd_grad_f _Checked[2];
+    _TPtr<double>	    grad_f = (_TPtr<double>)t_malloc<double>(2*sizeof(double));
+    _TPtr<double>	    grad_g = (_TPtr<double>)t_malloc<double>(2*sizeof(double));
+    _TPtr<double>	    grad_h = (_TPtr<double>)t_malloc<double>(2*sizeof(double));
+    _TPtr<double>	    dd_grad_f = (_TPtr<double>)t_malloc<double>(2*sizeof(double));
     double	    magnitude;
 
     int		    i;
@@ -247,7 +248,7 @@ double find_h (void)
     return (P-5*Q);
 }
 
-double find_gradient_f (double pi_R, double pi_I, _Array_ptr<double> gradient : count(2))
+double find_gradient_f (double pi_R, double pi_I, _TPtr<double> gradient )
 {
     int		    i;
     double	    magnitude=0.0;
@@ -263,7 +264,7 @@ double find_gradient_f (double pi_R, double pi_I, _Array_ptr<double> gradient : 
     return magnitude;
 }
 
-double find_gradient_g (_Array_ptr<double> gradient : count(2))
+double find_gradient_g (_TPtr<double> gradient )
 {
     int		    i;
     double	    magnitude=0.0;
@@ -279,7 +280,7 @@ double find_gradient_g (_Array_ptr<double> gradient : count(2))
     return magnitude;
 }
 
-double find_gradient_h (_Array_ptr<double> gradient : count(2))
+double find_gradient_h (_TPtr<double> gradient )
 {
     int		    i;
     double	    magnitude=0.0;
@@ -295,7 +296,7 @@ double find_gradient_h (_Array_ptr<double> gradient : count(2))
     return magnitude;
 }
 
-void find_dd_grad_f (double pi_R, double pi_I, _Array_ptr<double> dd_grad : count(2))
+void find_dd_grad_f (double pi_R, double pi_I, _TPtr<double> dd_grad )
 {
     double	    P_plus_1_inv=1/(P+1);
     double	    Q_plus_1_inv=1/(Q+1);
@@ -309,7 +310,7 @@ void find_dd_grad_f (double pi_R, double pi_I, _Array_ptr<double> dd_grad : coun
     dd_grad[1]=-Q_plus_1_inv*Q_plus_1_inv*Q_grad_term/grad_mag;
 }
 
-double make_orthogonal (_Array_ptr<double> v_mod : count(2), _Array_ptr<double> v_static : count(2))
+double make_orthogonal (_TPtr<double> v_mod , _TPtr<double> v_static )
 {
     int		    i;
     double	    total=0.0;

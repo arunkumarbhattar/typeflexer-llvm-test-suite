@@ -1,5 +1,0 @@
-list(APPEND CFLAGS -Wno-implicit-int)
-set(RUN_OPTIONS -2 int InstructionCombining.cpp.txt)
-set(HASH_PROGRAM_OUTPUT 1)
-llvm_multisource(agrep)
-llvm_test_data(agrep InstructionCombining.cpp.txt)
