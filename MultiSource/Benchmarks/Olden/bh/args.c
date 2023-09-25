@@ -12,12 +12,12 @@ int dealwithargs(int argc, _Array_ptr<_Nt_array_ptr<char>> argv : count(argc)) {
   if (argc > 2) 
     NumNodes = atoi(argv[2]);
   else 
-    NumNodes = 4;
+    NumNodes = 20;
 
   if (argc > 1)
     nbody = atoi(argv[1]);
   else
-    nbody = 32;
+    nbody = 20000;
 
   return level;
 }

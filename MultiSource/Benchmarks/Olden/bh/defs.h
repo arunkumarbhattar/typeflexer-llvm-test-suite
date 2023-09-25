@@ -26,7 +26,7 @@ int NumNodes;
 #define THREEDIM
 #include "vectmath.h"
 
-#pragma CHECKED_SCOPE ON
+#pragma CHECKED_SCOPE OFF
 
 #define MAX_NUM_NODES 64
 extern double fabs(double);
@@ -156,7 +156,7 @@ typedef struct cnode {
 #define FL_Next(x) ((x)->next)
 
 typedef struct {
-  real rmin _Checked[3];               
+  _TPtr<real> rmin;
   real rsize;
   nodeptr root;
   bodyptr bodytab _Checked[MAX_NUM_NODES];

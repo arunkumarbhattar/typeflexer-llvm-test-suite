@@ -6,7 +6,7 @@
  * 	    It's free because it's yours.
  */
 
-#pragma CHECKED_SCOPE ON
+#pragma CHECKED_SCOPE OFF
 
 #ifndef THREEDIM
 #  ifndef TWODIM
@@ -24,7 +24,7 @@
 #  define NDIM 3
 #endif
 
-typedef real vector _Checked[NDIM], matrix _Checked[NDIM][NDIM];
+typedef _TPtr<real> vector, matrix _Checked[NDIM][NDIM];
 #ifdef TORONTO
 extern double sqrt(double x);
 #endif

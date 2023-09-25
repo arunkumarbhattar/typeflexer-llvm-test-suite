@@ -11,8 +11,9 @@
 
 #include "defs.h"
 #include "code.h"
+#include <stdlib_tainted.h>
 
-#pragma CHECKED_SCOPE ON
+#pragma CHECKED_SCOPE OFF
 
 int nbody;
 
@@ -73,7 +74,8 @@ treeptr old_main(void) {
   treeptr t = NULL;
   bodyptr bt0 = NULL, p = NULL;
   long t1, t2;
-  vector cmr, cmv;
+  vector cmr = (vector)t_malloc(sizeof(real)*NDIM);
+  vector cmv = (vector)t_malloc(sizeof(real)*NDIM);
   bodyptr prev=NULL;
   int tmp=0, range=((1<<NDIM) << NDIM) / NumNodes;
   int bodiesper _Checked[MAX_NUM_NODES];
@@ -84,6 +86,7 @@ treeptr old_main(void) {
 /* Tree data structure is global, points to root, and bodylist, has size info */
   t = malloc<tree>(sizeof(tree));
   Root(t) = NULL;
+  t->rmin = (vector)t_malloc(sizeof(real)*NDIM);
   t->rmin[0] = -2.0;
   t->rmin[1] = -2.0;
   t->rmin[2] = -2.0;
@@ -95,7 +98,10 @@ treeptr old_main(void) {
 /* Creates a list of bodies */
   for (i=0; i < 32; i++)
     {
-    datapoints points = { 0.0 };
+    datapoints points = {NULL, NULL, NULL, NULL};
+    points.cmr = (vector)t_malloc(sizeof(real)*NDIM);
+    points.cmv = (vector)t_malloc(sizeof(real)*NDIM);
+
     int processor= i/(32/NumNodes);
 
     points=uniform_testdata(processor, nbody/32, i+1);
@@ -194,7 +200,8 @@ treeptr old_main(void) {
 bodyptr testdata(void)
 {
     real rsc, vsc, r, v, x, y;
-    vector cmr, cmv;
+    vector cmr = (vector)t_malloc(sizeof(real)*NDIM);
+    vector cmv = (vector)t_malloc(sizeof(real)*NDIM);
     bodyptr head = NULL, p = NULL, prev = NULL;
     register int i;
     double temp, t1;
@@ -365,7 +372,10 @@ bodyptr ubody_alloc(int p)
 { register bodyptr tmp = NULL;
 
   tmp = malloc<body>(sizeof(body));
-
+  tmp->pos = t_malloc<real>(sizeof(real)*NDIM);
+  tmp->vel = t_malloc<real>(sizeof(real)*NDIM);
+  tmp->acc = t_malloc<real>(sizeof(real)*NDIM);
+  tmp->new_acc = t_malloc<real>(sizeof(real)*NDIM);
   Type(tmp) = BODY;
   Proc(tmp) = p;
   Proc_Next(tmp) = NULL;
@@ -386,6 +396,8 @@ cellptr cell_alloc(int p)
   else 
     {
       tmp = malloc<cell>(sizeof(cell));
+      tmp->pos = t_malloc<real>(sizeof(real)*NDIM);
+
     }
   Type(tmp) = CELL;
   Proc(tmp) = p;
@@ -401,7 +413,10 @@ cellptr cell_alloc(int p)
 
 datapoints uniform_testdata(int proc, int nbodyx, int seedfactor)
 {
-  datapoints retval = { 0.0 };
+  datapoints retval = {NULL, NULL, NULL, NULL};
+  retval.cmr = (vector)t_malloc(sizeof(real)*NDIM);
+  retval.cmv = (vector)t_malloc(sizeof(real)*NDIM);
+
   real rsc, vsc, r, v, x, y;
   bodyptr head = NULL, p = NULL, prev = NULL;
   register int i;
@@ -553,7 +568,11 @@ void grav(real rsize, nodeptr rt, bodyptr bodies, int nstep, real dthf)
 void vp(bodyptr q, int nstep)
 {
   real dthf;
-  vector acc1, dacc, dvel, vel1, dpos;
+  vector acc1 = (vector)t_malloc(sizeof(real)*NDIM);
+  vector dacc = (vector)t_malloc(sizeof(real)*NDIM);
+  vector dvel = (vector)t_malloc(sizeof(real)*NDIM);
+  vector vel1 = (vector)t_malloc(sizeof(real)*NDIM);
+  vector dpos = (vector)t_malloc(sizeof(real)*NDIM);
 
   dthf = 0.5 * dtime;				/* set basic half-step      */
 
@@ -653,6 +672,8 @@ void gravstep(real rsize, nodeptr rt, bodyptr p, int nstep, real dthf)
 void hackgrav(bodyptr p, real rsize, nodeptr rt)
 {
   hgstruct hg = {0};
+  hg.pos0 = (vector)t_malloc(sizeof(real)*NDIM);
+  hg.acc0 = (vector)t_malloc(sizeof(real)*NDIM);
   real szsq;
 
   NOTEST();
@@ -675,9 +696,10 @@ void hackgrav(bodyptr p, real rsize, nodeptr rt)
 hgstruct gravsub(nodeptr p, hgstruct hg)
 {
   real drabs, phii, mor3;
-  vector ai, quaddr;
+  vector ai = (vector)t_malloc(sizeof(real)*NDIM);
+  vector quaddr = (vector)t_malloc(sizeof(real)*NDIM);
   real dr5inv, phiquad, drquaddr;
-  vector dr;
+  vector dr = (vector)t_malloc(sizeof(real)*NDIM);
   real drsq;
 
 
@@ -732,8 +754,8 @@ hgstruct gravsub(nodeptr p, hgstruct hg)
  bool subdivp(nodeptr p, real dsq, real tolsq, hgstruct hg)
 {
   register nodeptr local_p = NULL;
-  vector dr;
-  vector pos;
+  vector dr = (vector)t_malloc(sizeof(real)*NDIM);
+  vector pos = (vector)t_malloc(sizeof(real)*NDIM);
   real drsq;
 
   local_p = (nodeptr)p;
@@ -838,9 +860,10 @@ void expandbox(bodyptr p, treeptr t, int nsteps, int proc)
 {
     icstruct ic;
     int k;
-    vector rmid;
+    vector rmid = (vector)t_malloc(sizeof(real)*NDIM);
     cellptr  newt = NULL;
-    tree tmp = { 0.0 };
+    tree tmp = {NULL, 0.0, NULL, NULL, NULL};
+    tmp.rmin = (vector)t_malloc(sizeof(real)*NDIM);
     real rsize;
     int inbox;
 
@@ -991,7 +1014,7 @@ icstruct intcoord(bodyptr p, treeptr t)
     double floor(double);
     icstruct ic;
     register real rsize;
-    vector pos;
+    vector pos = (vector)t_malloc(sizeof(real)*NDIM);
 
 
     ic.inb = TRUE;					/* use to check bounds      */
@@ -1039,7 +1062,7 @@ int ic_test(bodyptr p, treeptr t)
 {
     double xsc, rsize, floor(double);
     int result;
-    vector pos;
+    vector pos = (vector)t_malloc(sizeof(real)*NDIM);
 
     result = TRUE;					/* use to check bounds      */
 
@@ -1088,7 +1111,7 @@ int subindex(bodyptr p, treeptr t , int l)
     register real rsize;
     double xsc, floor(double);
     int xp _Checked[NDIM];
-    vector pos;
+    vector pos = (vector)t_malloc(sizeof(real)*NDIM);
 
     pos[0] = Pos(p)[0];
     pos[1] = Pos(p)[1];
@@ -1139,8 +1162,8 @@ real hackcofm(nodeptr q)
 {
     register int i;
     register nodeptr r = NULL;
-    vector tmpv;
-    vector tmp_pos;
+    vector tmpv = (vector)t_malloc(sizeof(real)*NDIM);
+    vector tmp_pos = (vector)t_malloc(sizeof(real)*NDIM);
     register real mq, mr;
 
     /*chatting("Entered hackcofm, q=0x%x,fp=0x%x,sp=0x%x\n",q,__getfp(),__getsp());*/
