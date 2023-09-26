@@ -1,0 +1,213 @@
+[
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/fpcmp-target.dir/fpcmp.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/fpcmp.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/tools",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/fpcmp.c",
+    "output": "/home/arun/Desktop/test-suite-build/tools/CMakeFiles/fpcmp-target.dir/fpcmp.c.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-o",
+      "/home/arun/Desktop/test-suite-build/tools/fpcmp.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/fpcmp.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/tools",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/fpcmp.c",
+    "output": "/home/arun/Desktop/test-suite-build/tools/fpcmp.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/timeit-target.dir/timeit.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/timeit.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/tools",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/timeit.c",
+    "output": "/home/arun/Desktop/test-suite-build/tools/CMakeFiles/timeit-target.dir/timeit.c.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-o",
+      "/home/arun/Desktop/test-suite-build/tools/timeit.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/timeit.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/tools",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/tools/timeit.c",
+    "output": "/home/arun/Desktop/test-suite-build/tools/timeit.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/bc.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/bc.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/bc.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/bc.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/execute.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/execute.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/execute.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/execute.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/global.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/global.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/global.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/global.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/load.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/load.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/load.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/load.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/main.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/main.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/main.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/main.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/number.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/number.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/number.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/number.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/scan.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/scan.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/scan.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/scan.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/storage.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/storage.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/storage.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/storage.c.o"
+  },
+  {
+    "arguments": [
+      "/home/arun/Desktop/TypeFlexer-Clang/llvm/cmake-build-debug/bin/clang",
+      "-DNDEBUG",
+      "-O0",
+      "-g",
+      "-w",
+      "-Werror=date-time",
+      "-c",
+      "-o",
+      "CMakeFiles/bc.dir/util.c.o",
+      "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/util.c"
+    ],
+    "directory": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc",
+    "file": "/home/arun/Desktop/typeflexer-llvm-test-suite/MultiSource/Benchmarks/Ptrdist/bc/util.c",
+    "output": "/home/arun/Desktop/test-suite-build/MultiSource/Benchmarks/Ptrdist/bc/CMakeFiles/bc.dir/util.c.o"
+  }
+]

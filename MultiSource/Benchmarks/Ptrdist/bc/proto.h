@@ -53,76 +53,75 @@
 
 /* From execute.c */
 _PROTOTYPE(void stop_execution, (int));
-_PROTOTYPE(unsigned char byte, (program_counter * pc));
+_PROTOTYPE(unsigned char byte, (_Ptr<program_counter> pc));
 _PROTOTYPE(void execute, (void));
 _PROTOTYPE(char prog_char, (void));
 _PROTOTYPE(char input_char, (void));
-_PROTOTYPE(void push_constant, (char (*in_char)(void), int conv_base));
-_PROTOTYPE(void push_b10_const, (program_counter * pc));
+_PROTOTYPE(void push_constant, (_Ptr<char (void)> in_char, int conv_base));
+_PROTOTYPE(void push_b10_const, (_Ptr<program_counter> pc));
 _PROTOTYPE(void assign, (char c_code));
 
 /* From util.c */
-_PROTOTYPE(char * strcopyof, (char * str));
-_PROTOTYPE(arg_list * nextarg, (arg_list * args, char val));
-_PROTOTYPE(char * arg_str, (arg_list * args, int));
-_PROTOTYPE(void free_args, (arg_list * args));
-_PROTOTYPE(void check_params, (arg_list * params, arg_list * autos));
+char *strcopyof(char *str : itype(_Ptr<char>)) : itype(_Ptr<char>);
+_Ptr<arg_list> nextarg(arg_list *args : itype(_Ptr<arg_list>), char val);
+_Ptr<char> arg_str(_Ptr<arg_list> args, int commas);
+_PROTOTYPE(void free_args, (arg_list *args : itype(_Ptr<arg_list>)));
+_PROTOTYPE(void check_params, (arg_list *params : itype(_Ptr<arg_list>), arg_list *autos : itype(_Ptr<arg_list>)));
 _PROTOTYPE(void init_gen, (void));
-_PROTOTYPE(void generate, (char * str));
+_PROTOTYPE(void generate, (char *str : itype(_Ptr<char>)));
 _PROTOTYPE(void run_code, (void));
 _PROTOTYPE(void out_char, (char ch));
-_PROTOTYPE(id_rec * find_id, (id_rec * tree, char * id));
-_PROTOTYPE(int insert_id_rec, (id_rec * * root, id_rec * new_id));
+_Ptr<id_rec> find_id(_Ptr<id_rec> tree, char *id : itype(_Ptr<char>));
+_PROTOTYPE(int insert_id_rec, (_Ptr<id_rec *> root, id_rec *new_id : itype(_Ptr<id_rec>)));
 _PROTOTYPE(void init_tree, (void));
-_PROTOTYPE(int lookup, (char * name, int namekind));
+_PROTOTYPE(int lookup, (char *name : itype(_Ptr<char>), int namekind));
 #ifdef notdef
 _PROTOTYPE(char *bc_malloc, (int));
 _PROTOTYPE(void out_of_memory, (void));
 #endif
 _PROTOTYPE(void welcome, (void));
-_PROTOTYPE(void warranty, (char *));
+_PROTOTYPE(void warranty, (char *prefix : itype(_Ptr<char>)));
 _PROTOTYPE(void limits, (void));
-_PROTOTYPE(void yyerror, (char *str ,...));
-_PROTOTYPE(void warn, (char *mesg ,...));
-_PROTOTYPE(void rt_error, (char *mesg ,...));
-_PROTOTYPE(void rt_warn, (char *mesg ,...));
+_PROTOTYPE(void yyerror, (char *str : itype(_Ptr<char>), ...));
+_PROTOTYPE(void warn, (char *mesg : itype(_Ptr<char>), ...));
+_PROTOTYPE(void rt_error, (char *mesg : itype(_Ptr<char>), ...));
+_PROTOTYPE(void rt_warn, (char *mesg : itype(_Ptr<char>), ...));
 
 /* From load.c */
 _PROTOTYPE(void init_load, (void));
 _PROTOTYPE(void addbyte, (int byte));
 _PROTOTYPE(void def_label, (long lab));
-_PROTOTYPE(long long_val, (char * * str));
-_PROTOTYPE(void load_code, (char * code));
+_PROTOTYPE(long long_val, (_Ptr<char *> str));
+_PROTOTYPE(void load_code, (char *code : itype(_Ptr<char>)));
 
 /* From main.c */
-_PROTOTYPE(int main, (int argc , char **argv));
+_PROTOTYPE(int main, (int argc, char **argv : itype(_Ptr<_Ptr<char>>)));
 _PROTOTYPE(int open_new_file, (void));
-_PROTOTYPE(void new_yy_file, (FILE *file));
+_PROTOTYPE(void new_yy_file, (_Ptr<FILE> file));
 _PROTOTYPE(void use_quit, (int));
 
 /* From number.c */
-_PROTOTYPE(void free_num, (bc_num * num));
-_PROTOTYPE(bc_num new_num, (int length, int scale));
+_PROTOTYPE(void free_num, (_Ptr<bc_num> num));
+bc_num new_num(int length, int scale) : itype(_Ptr<bc_struct>);
 _PROTOTYPE(void init_numbers, (void));
-_PROTOTYPE(bc_num copy_num, (bc_num num));
-_PROTOTYPE(void init_num, (bc_num * num));
+bc_num copy_num(bc_num num : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>);
+_PROTOTYPE(void init_num, (_Ptr<bc_num> num));
 _PROTOTYPE(void str2num, (bc_num * num, char * str, int scale));
 _PROTOTYPE(char * num2str, (bc_num num));
-_PROTOTYPE(void int2num, (bc_num * num, int val));
-_PROTOTYPE(long num2long, (bc_num num));
-_PROTOTYPE(int bc_compare, (bc_num n1, bc_num n2));
-_PROTOTYPE(char is_zero, (bc_num num));
-_PROTOTYPE(char is_neg, (bc_num num));
-_PROTOTYPE(void bc_add, (bc_num n1, bc_num n2, bc_num * result));
-_PROTOTYPE(void bc_sub, (bc_num n1, bc_num n2, bc_num * result));
-_PROTOTYPE(void bc_multiply, (bc_num n1, bc_num n2, bc_num * prod, int scale));
-_PROTOTYPE(int bc_divide, (bc_num n1, bc_num n2, bc_num * quot, int scale));
-_PROTOTYPE(int bc_modulo, (bc_num num1, bc_num num2, bc_num * result, int scale));
-_PROTOTYPE(void bc_raise, (bc_num num1, bc_num num2, bc_num * result, int scale));
-_PROTOTYPE(int bc_sqrt, (bc_num * num, int scale));
-_PROTOTYPE(void out_long, (long val, int size, int space,
-			   void (*out_char)(int)));
-_PROTOTYPE(void out_num, (bc_num num, int o_base, void (* out_char)(int)));
+_PROTOTYPE(void int2num, (_Ptr<bc_num> num, int val));
+_PROTOTYPE(long num2long, (bc_num num : itype(_Ptr<bc_struct>)));
+_PROTOTYPE(int bc_compare, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>)));
+_PROTOTYPE(char is_zero, (bc_num num : itype(_Ptr<bc_struct>)));
+_PROTOTYPE(char is_neg, (bc_num num : itype(_Ptr<bc_struct>)));
+_PROTOTYPE(void bc_add, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result));
+_PROTOTYPE(void bc_sub, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result));
+_PROTOTYPE(void bc_multiply, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> prod, int scale));
+_PROTOTYPE(int bc_divide, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> quot, int scale));
+_PROTOTYPE(int bc_modulo, (bc_num num1 : itype(_Ptr<bc_struct>), bc_num num2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result, int scale));
+_PROTOTYPE(void bc_raise, (bc_num num1 : itype(_Ptr<bc_struct>), bc_num num2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result, int scale));
+_PROTOTYPE(int bc_sqrt, (_Ptr<bc_num> num, int scale));
+_PROTOTYPE(void out_long, (long val, int size, int space, _Ptr<void (int)> out_char));
+_PROTOTYPE(void out_num, (bc_num num : itype(_Ptr<bc_struct>), int o_base, _Ptr<void (int)> out_char));
 
 
 /* From storage.c */
@@ -134,11 +133,11 @@ _PROTOTYPE(void clear_func, (char func ));
 _PROTOTYPE(int fpop, (void));
 _PROTOTYPE(void fpush, (int val ));
 _PROTOTYPE(void pop, (void));
-_PROTOTYPE(void push_copy, (bc_num num ));
-_PROTOTYPE(void push_num, (bc_num num ));
+_PROTOTYPE(void push_copy, (bc_num num : itype(_Ptr<bc_struct>)));
+_PROTOTYPE(void push_num, (bc_num num : itype(_Ptr<bc_struct>)));
 _PROTOTYPE(char check_stack, (int depth ));
-_PROTOTYPE(bc_var * get_var, (int var_name ));
-_PROTOTYPE(bc_num * get_array_num, (int var_index, long index ));
+bc_var *get_var(int var_name) : itype(_Ptr<bc_var>);
+bc_num *get_array_num(int var_index, long index) : itype(_Ptr<bc_num>);
 _PROTOTYPE(void store_var, (int var_name ));
 _PROTOTYPE(void store_array, (int var_name ));
 _PROTOTYPE(void load_var, (int var_name ));
@@ -148,13 +147,13 @@ _PROTOTYPE(void decr_array, (char var_name ));
 _PROTOTYPE(void incr_var, (int var_name ));
 _PROTOTYPE(void incr_array, (int var_name ));
 _PROTOTYPE(void auto_var, (int name ));
-_PROTOTYPE(void free_a_tree, (bc_array_node * root, int depth ));
-_PROTOTYPE(void pop_vars, (arg_list * list ));
-_PROTOTYPE(void process_params, (program_counter * pc, int func ));
+_PROTOTYPE(void free_a_tree, (_Ptr<bc_array_node> root, int depth));
+_PROTOTYPE(void pop_vars, (arg_list *list : itype(_Ptr<arg_list>)));
+_PROTOTYPE(void process_params, (_Ptr<program_counter> pc, int func));
 
 /* For the scanner and parser.... */
 _PROTOTYPE(int yyparse, (void));
-_PROTOTYPE(int yylex, (void)); 
+_PROTOTYPE(int yylex, (void));
 
 /* Other things... */
 /* _PROTOTYPE (int getopt, (int, const char * const *, const char *)); */

@@ -1,9 +1,9 @@
 typedef struct  {
-	char * s_value;
+	_Ptr<char> s_value;
 	char	  c_value;
 	int	  i_value;
-	arg_list * a_value;
-       } YYSTYPE;
+	_Ptr<arg_list> a_value;
+} YYSTYPE;
 extern YYSTYPE yylval;
 # define NEWLINE 257
 # define AND 258

@@ -59,94 +59,94 @@
    actual character pointer. */
 
 typedef struct bc_label_group
-    {
-      long l_adrs[BC_LABEL_GROUP];
-      struct bc_label_group * l_next;
-    } bc_label_group;
+{
+    long l_adrs[BC_LABEL_GROUP];
+    _Ptr<struct bc_label_group> l_next;
+} bc_label_group;
 
 
 /* Each function has its own code segments and labels.  There can be
    no jumps between functions so labels are unique to a function. */
 
 typedef struct arg_list
-    {
-      int av_name;
-      struct arg_list * next;
-    } arg_list;
+{
+    int av_name;
+    struct arg_list * next;
+} arg_list;
 
-typedef struct 
-    {
-      char f_defined;   /* Is this function defined yet. */
-      char * f_body[BC_MAX_SEGS];
-      int   f_code_size;
-      bc_label_group * f_label;
-      arg_list * f_params;
-      arg_list * f_autos;
-    } bc_function;
+typedef struct
+{
+    char f_defined;   /* Is this function defined yet. */
+    char * f_body[BC_MAX_SEGS];
+    int   f_code_size;
+    _Ptr<bc_label_group> f_label;
+    arg_list * f_params;
+    arg_list * f_autos;
+} bc_function;
 
 /* Code addresses. */
 typedef struct {
-      int pc_func;
-      int pc_addr;
-    } program_counter;
+    int pc_func;
+    int pc_addr;
+} program_counter;
 
 
 /* Variables are "pushable" (auto) and thus we need a stack mechanism.
    This is built into the variable record. */
 
 typedef struct bc_var
-    {
-      bc_num v_value;
-      struct bc_var * v_next;
-    }  bc_var;
+{
+    bc_num v_value;
+    struct bc_var * v_next;
+}  bc_var;
 
 
 /* bc arrays can also be "auto" variables and thus need the same
    kind of stacking mechanisms. */
 
 typedef struct bc_array_node
-    {
-	  bc_num n_num[NODE_SIZE];
-	  struct bc_array_node * n_down[NODE_SIZE];
-    } bc_array_node;
+{
+    bc_num n_num[NODE_SIZE];
+    struct bc_array_node * n_down[NODE_SIZE];
+} bc_array_node;
 
 typedef struct bc_array
-    {
-      bc_array_node * a_tree;
-      short a_depth;
-    } bc_array;
+{
+    bc_array_node * a_tree;
+    short a_depth;
+} bc_array;
 
 typedef struct bc_var_array
-    {
-      bc_array * a_value;
-      char      a_param;
-      struct bc_var_array * a_next;
-    } bc_var_array;
+{
+    _Ptr<bc_array> a_value;
+    char      a_param;
+    struct bc_var_array * a_next;
+} bc_var_array;
 
 
 /* For the stacks, execution and function, we need records to allow
    for arbitrary size. */
 
 typedef struct estack_rec {
-	bc_num s_num;
-	struct estack_rec * s_next;
+    bc_num s_num;
+    struct estack_rec * s_next;
 } estack_rec;
 
 typedef struct fstack_rec {
-	int  s_val;
-	struct fstack_rec * s_next;
+    int  s_val;
+    struct fstack_rec * s_next;
 } fstack_rec;
 
 
 /* The following are for the name tree. */
 
 typedef struct id_rec {
-	char * id;   /* The program name. */
-			/* A name == 0 => nothing assigned yet. */
-	int   a_name;   /* The array variable name (number). */
-	int   f_name;   /* The function name (number).  */
-	int   v_name;   /* The variable name (number).  */
-        short balance;  /* For the balanced tree. */
-	struct id_rec * left;
-	struct id_rec * right; /* Tree pointers. */
+    char * id;   /* The program name. */
+    /* A name == 0 => nothing assigned yet. */
+    int   a_name;   /* The array variable name (number). */
+    int   f_name;   /* The function name (number).  */
+    int   v_name;   /* The variable name (number).  */
+    short balance;  /* For the balanced tree. */
+    struct id_rec * left;
+    struct id_rec * right; /* Tree pointers. */
 } id_rec;

@@ -39,31 +39,30 @@ bc_num _two_;
    frees the storage if reference count is zero. */
 
 void
-free_num (bc_num * num)
+free_num (_Ptr<bc_num> num)
 {
-  if (*num == NULL) return;
-  (*num)->n_refs--; 
-  if ((*num)->n_refs == 0) free(*num);
-  *num = NULL;
+    if (*num == NULL) return;
+    (*num)->n_refs--;
+    if ((*num)->n_refs == 0) free<bc_struct>(*num);
+    *num = NULL;
 }
 
 
 /* new_num allocates a number and sets fields to known values. */
 
-bc_num
-new_num (int length, int scale)
-{
-  bc_num temp;
+bc_num new_num(int length, int scale) : itype(_Ptr<bc_struct>)
+        {
+                bc_num temp;
 
-  temp = (bc_struct *)malloc(sizeof(bc_struct)+length+scale);
-  /* XXX if (temp == NULL) out_of_memory (); */
-  temp->n_sign = PLUS;
-  temp->n_len = length;
-  temp->n_scale = scale;
-  temp->n_refs = 1;
-  temp->n_value[0] = 0;
-  return temp;
-}
+        temp = (bc_struct *)malloc<bc_struct>(sizeof(bc_struct)+length+scale);
+        /* XXX if (temp == NULL) out_of_memory (); */
+        temp->n_sign = PLUS;
+        temp->n_len = length;
+        temp->n_scale = scale;
+        temp->n_refs = 1;
+        temp->n_value[0] = 0;
+        return temp;
+        }
 
 
 /* Intitialize the number package! */
@@ -71,121 +70,118 @@ new_num (int length, int scale)
 void
 init_numbers (void)
 {
-  _zero_ = new_num (1,0);
-  _one_  = new_num (1,0);
-  _one_->n_value[0] = 1;
-  _two_  = new_num (1,0);
-  _two_->n_value[0] = 2;
+    _zero_ = new_num (1,0);
+    _one_  = new_num (1,0);
+    _one_->n_value[0] = 1;
+    _two_  = new_num (1,0);
+    _two_->n_value[0] = 2;
 }
 
 
 /* Make a copy of a number!  Just increments the reference count! */
 
-bc_num
-copy_num (bc_num num)
-{
-  num->n_refs++;
-  return num;
-}
+bc_num copy_num(bc_num num : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>)
+        {
+                num->n_refs++;
+        return num;
+        }
 
 
 /* Initialize a number NUM by making it a copy of zero. */
 
 void
-init_num (bc_num * num)
+init_num (_Ptr<bc_num> num)
 {
-  *num = copy_num (_zero_);
+    *num = copy_num (_zero_);
 }
 
 
 /* Convert an integer  to a bc number NUM. */
 
 void
-int2num (bc_num * num, int val)
+int2num (_Ptr<bc_num> num, int val)
 {
-  char buffer[30];
-  char * bptr;
-  char * vptr;
-  int  ix = 1;
-  char neg = 0;
-  ;
-  
-  /* Sign. */
-  if (val < 0)
+    char buffer[30];
+    char * bptr;
+    char * vptr;
+    int  ix = 1;
+    char neg = 0;
+    ;
+
+    /* Sign. */
+    if (val < 0)
     {
-      neg = 1;
-      val = -val;
+        neg = 1;
+        val = -val;
     }
-  
-  /* Get things going. */
-  bptr = &buffer[0];
-  *bptr++ = val % 10;
-  val = val / 10;
-  
-  /* Extract remaining digits. */
-  while (val != 0)
+
+    /* Get things going. */
+    bptr = &buffer[0];
+    *bptr++ = val % 10;
+    val = val / 10;
+
+    /* Extract remaining digits. */
+    while (val != 0)
     {
-      *bptr++ = val % 10;
-      val = val / 10;
-      ix++; 		/* Count the digits. */
+        *bptr++ = val % 10;
+        val = val / 10;
+        ix++; 		/* Count the digits. */
     }
-  
-  /* Make the number. */
-  free_num (num);
-  *num = new_num (ix, 0);
-  if (neg) (*num)->n_sign = MINUS;
-  
-  /* Assign the digits. */
-  vptr = &((*num)->n_value[0]);
-  while (ix-- > 0)
-    *vptr++ = *--bptr;
-  ;
+
+    /* Make the number. */
+    free_num (num);
+    *num = new_num (ix, 0);
+    if (neg) (*num)->n_sign = MINUS;
+
+    /* Assign the digits. */
+    vptr = &((*num)->n_value[0]);
+    while (ix-- > 0)
+        *vptr++ = *--bptr;
+    ;
 }
 
 
-/* Convert a number NUM to a long.  The function returns only the integer 
+/* Convert a number NUM to a long.  The function returns only the integer
    part of the number.  For numbers that are too large to represent as
    a long, this function returns a zero.  This can be detected by checking
    the NUM for zero after having a zero returned. */
 
 long
-num2long (bc_num num)
+num2long (bc_num num : itype(_Ptr<bc_struct>))
 {
-  long val;
-  char * nptr;
-  int  index;
-  ;
+long val;
+char * nptr;
+int  index;
+;
 
-  /* Extract the int value, ignore the fraction. */
-  val = 0;
-  nptr = &num->n_value[0];
-  for (index=num->n_len; (index>0) && (val<=(LONG_MAX/10)); index--)
-    val = val*10 + *nptr++;
-  
-  /* Check for overflow.  If overflow, return zero. */
-  if (index>0) val = 0;
-  if (val < 0) val = 0;
- 
-  /* Return the value. */
-  if (num->n_sign == PLUS) {
-    ;
-    return (val);
-  }
-  else {
-    ;
-    return (-val);
-  }
+/* Extract the int value, ignore the fraction. */
+val = 0;
+nptr = &num->n_value[0];
+for (index=num->n_len; (index>0) && (val<=(LONG_MAX/10)); index--)
+val = val*10 + *nptr++;
+
+/* Check for overflow.  If overflow, return zero. */
+if (index>0) val = 0;
+if (val < 0) val = 0;
+
+/* Return the value. */
+if (num->n_sign == PLUS) {
+;
+return (val);
+}
+else {
+;
+return (-val);
+}
 }
 
 
 /* The following are some math routines for numbers. */
-_PROTOTYPE(static int _do_compare, (bc_num n1, bc_num n2, int use_sign,
-				    int ignore_last));
-_PROTOTYPE(static void _rm_leading_zeros, (bc_num num));
-_PROTOTYPE(static bc_num _do_add, (bc_num n1, bc_num n2));
-_PROTOTYPE(static bc_num _do_sub, (bc_num n1, bc_num n2));
-_PROTOTYPE(static void _one_mult, (char * num, int size, int digit,
-				   char * result));
+_PROTOTYPE(static int _do_compare, (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), int use_sign, int ignore_last));
+_PROTOTYPE(static void _rm_leading_zeros, (bc_num num : itype(_Ptr<bc_struct>)));
+static bc_num _do_add(bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>);
+static bc_num _do_sub(bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>);
+_PROTOTYPE(static void _one_mult, (char *num : itype(_Ptr<char>), int size, int digit, char *result : itype(_Ptr<char>)));
 
 
 
@@ -194,148 +190,148 @@ _PROTOTYPE(static void _one_mult, (char * num, int size, int digit,
    compare the magnitudes. */
 
 static int
-_do_compare (bc_num n1, bc_num n2, int use_sign, int ignore_last)
+_do_compare (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), int use_sign, int ignore_last)
 {
-  char * n1ptr;
-  char * n2ptr;
-  int  count;
-  
-  /* First, compare signs. */
-  if (use_sign && n1->n_sign != n2->n_sign)
-    {
-      if (n1->n_sign == PLUS)
-	return (1);	/* Positive N1 > Negative N2 */
-      else
-	return (-1);	/* Negative N1 < Positive N1 */
-    }
-  
-  /* Now compare the magnitude. */
-  if (n1->n_len != n2->n_len)
-    {
-      if (n1->n_len > n2->n_len)
-	{
-	  /* Magnitude of n1 > n2. */
-	  if (!use_sign || n1->n_sign == PLUS)
-	    return (1);
-	  else
-	    return (-1);
-	}
-      else
-	{
-	  /* Magnitude of n1 < n2. */
-	  if (!use_sign || n1->n_sign == PLUS)
-	    return (-1);
-	  else
-	    return (1);
-	}
-    }
+char * n1ptr;
+char * n2ptr;
+int  count;
 
-  /* If we get here, they have the same number of integer digits.
-     check the integer part and the equal length part of the fraction. */
-  count = n1->n_len + MIN (n1->n_scale, n2->n_scale);
-  n1ptr = &n1->n_value[0];
-  n2ptr = &n2->n_value[0];
+/* First, compare signs. */
+if (use_sign && n1->n_sign != n2->n_sign)
+{
+if (n1->n_sign == PLUS)
+return (1);	/* Positive N1 > Negative N2 */
+else
+return (-1);	/* Negative N1 < Positive N1 */
+}
 
-  while ((count > 0) && (*n1ptr == *n2ptr))
-    {
-      n1ptr++;
-      n2ptr++;
-      count--;
-    }
-  if (ignore_last && count == 1 && n1->n_scale == n2->n_scale)
-    return (0);
-  if (count != 0)
-    {
-      if (*n1ptr > *n2ptr)
-	{
-	  /* Magnitude of n1 > n2. */
-	  if (!use_sign || n1->n_sign == PLUS)
-	    return (1);
-	  else
-	    return (-1);
-	}
-      else
-	{
-	  /* Magnitude of n1 < n2. */
-	  if (!use_sign || n1->n_sign == PLUS)
-	    return (-1);
-	  else
-	    return (1);
-	}
-    }
+/* Now compare the magnitude. */
+if (n1->n_len != n2->n_len)
+{
+if (n1->n_len > n2->n_len)
+{
+/* Magnitude of n1 > n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (1);
+else
+return (-1);
+}
+else
+{
+/* Magnitude of n1 < n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (-1);
+else
+return (1);
+}
+}
 
-  /* They are equal up to the last part of the equal part of the fraction. */
-  if (n1->n_scale != n2->n_scale) 
-    if (n1->n_scale > n2->n_scale)
-      {
-	for (count = n1->n_scale-n2->n_scale; count>0; count--)
-	  if (*n1ptr++ != 0)
-	    {
-	      /* Magnitude of n1 > n2. */
-	      if (!use_sign || n1->n_sign == PLUS)
-		return (1);
-	      else
-		return (-1);
-	    }
-      }
-    else
-      {
-	for (count = n2->n_scale-n1->n_scale; count>0; count--)
-	  if (*n2ptr++ != 0)
-	    {
-	      /* Magnitude of n1 < n2. */
-	      if (!use_sign || n1->n_sign == PLUS)
-		return (-1);
-	      else
-		return (1);
-	    }
-      }
-  
-  /* They must be equal! */
-  return (0);
+/* If we get here, they have the same number of integer digits.
+   check the integer part and the equal length part of the fraction. */
+count = n1->n_len + MIN (n1->n_scale, n2->n_scale);
+n1ptr = &n1->n_value[0];
+n2ptr = &n2->n_value[0];
+
+while ((count > 0) && (*n1ptr == *n2ptr))
+{
+n1ptr++;
+n2ptr++;
+count--;
+}
+if (ignore_last && count == 1 && n1->n_scale == n2->n_scale)
+return (0);
+if (count != 0)
+{
+if (*n1ptr > *n2ptr)
+{
+/* Magnitude of n1 > n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (1);
+else
+return (-1);
+}
+else
+{
+/* Magnitude of n1 < n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (-1);
+else
+return (1);
+}
+}
+
+/* They are equal up to the last part of the equal part of the fraction. */
+if (n1->n_scale != n2->n_scale)
+if (n1->n_scale > n2->n_scale)
+{
+for (count = n1->n_scale-n2->n_scale; count>0; count--)
+if (*n1ptr++ != 0)
+{
+/* Magnitude of n1 > n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (1);
+else
+return (-1);
+}
+}
+else
+{
+for (count = n2->n_scale-n1->n_scale; count>0; count--)
+if (*n2ptr++ != 0)
+{
+/* Magnitude of n1 < n2. */
+if (!use_sign || n1->n_sign == PLUS)
+return (-1);
+else
+return (1);
+}
+}
+
+/* They must be equal! */
+return (0);
 }
 
 
 /* This is the "user callable" routine to compare numbers N1 and N2. */
 
 int
-bc_compare (bc_num n1, bc_num n2)
+bc_compare (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>))
 {
-  return _do_compare (n1, n2, TRUE, FALSE);
+return _do_compare (n1, n2, TRUE, FALSE);
 }
 
 
 /* In some places we need to check if the number NUM is zero. */
 
 char
-is_zero (bc_num num)
+is_zero (bc_num num : itype(_Ptr<bc_struct>))
 {
-  int  count;
-  char * nptr;
+int  count;
+char * nptr;
 
-  /* Quick check. */
-  if (num == _zero_) return TRUE;
+/* Quick check. */
+if (num == _zero_) return TRUE;
 
-  /* Initialize */
-  count = num->n_len + num->n_scale;
-  nptr = &num->n_value[0];
+/* Initialize */
+count = num->n_len + num->n_scale;
+nptr = &num->n_value[0];
 
-  /* The check */
-  while ((count > 0) && (*nptr++ == 0)) count--;
+/* The check */
+while ((count > 0) && (*nptr++ == 0)) count--;
 
-  if (count != 0)
-    return FALSE;
-  else 
-    return TRUE;
+if (count != 0)
+return FALSE;
+else
+return TRUE;
 }
 
 
 /* In some places we need to check if the number is negative. */
 
 char
-is_neg (bc_num num)
+is_neg (bc_num num : itype(_Ptr<bc_struct>))
 {
-  return num->n_sign == MINUS;
+return num->n_sign == MINUS;
 }
 
 
@@ -344,240 +340,238 @@ is_neg (bc_num num)
    place and adjusts the length. */
 
 static void
-_rm_leading_zeros (bc_num num)
+_rm_leading_zeros (bc_num num : itype(_Ptr<bc_struct>))
 {
-  int bytes;
-  char * dst;
-  char * src;
+int bytes;
+char * dst;
+char * src;
 
-  /* Do a quick check to see if we need to do it. */
-  /* if ((*num)->n_value != (void *)0) return; */
+/* Do a quick check to see if we need to do it. */
+/* if ((*num)->n_value != (void *)0) return; */
 
-  /* The first digit is 0, find the first non-zero digit in the 10's or
-     greater place. */
-  bytes = num->n_len;
-  src = &num->n_value[0];
-  while (bytes > 1 && *src == 0) src++, bytes--;
-  num->n_len = bytes;
-  bytes += num->n_scale;
-  dst = &num->n_value[0];
-  while (bytes-- > 0) *dst++ = *src++;
-  
+/* The first digit is 0, find the first non-zero digit in the 10's or
+   greater place. */
+bytes = num->n_len;
+src = &num->n_value[0];
+while (bytes > 1 && *src == 0) src++, bytes--;
+num->n_len = bytes;
+bytes += num->n_scale;
+dst = &num->n_value[0];
+while (bytes-- > 0) *dst++ = *src++;
+
 }
 
 
 /* Perform addition: N1 is added to N2 and the value is
    returned.  The signs of N1 and N2 are ignored. */
 
-static bc_num
-_do_add (bc_num n1, bc_num n2)
-{
-  bc_num sum;
-  int sum_scale, sum_digits;
-  char * n1ptr;
-  char * n2ptr;
-  char * sumptr;
-  int carry, n1bytes, n2bytes;
+static bc_num _do_add(bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>)
+        {
+                bc_num sum;
+        int sum_scale, sum_digits;
+        char * n1ptr;
+        char * n2ptr;
+        char * sumptr;
+        int carry, n1bytes, n2bytes;
 
-  /* Prepare sum. */
-  sum_scale = MAX (n1->n_scale, n2->n_scale);
-  sum_digits = MAX (n1->n_len, n2->n_len) + 1;
-  sum = new_num (sum_digits,sum_scale);
+        /* Prepare sum. */
+        sum_scale = MAX (n1->n_scale, n2->n_scale);
+        sum_digits = MAX (n1->n_len, n2->n_len) + 1;
+        sum = new_num (sum_digits,sum_scale);
 
-  /* Start with the fraction part.  Initialize the pointers. */
-  n1bytes = n1->n_scale;
-  n2bytes = n2->n_scale;
-  n1ptr = &n1->n_value[0] + n1->n_len + n1bytes - 1;
-  n2ptr = &n2->n_value[0] + n2->n_len + n2bytes - 1;
-  sumptr = &sum->n_value[0] + sum_scale + sum_digits - 1;
+        /* Start with the fraction part.  Initialize the pointers. */
+        n1bytes = n1->n_scale;
+        n2bytes = n2->n_scale;
+        n1ptr = &n1->n_value[0] + n1->n_len + n1bytes - 1;
+        n2ptr = &n2->n_value[0] + n2->n_len + n2bytes - 1;
+        sumptr = &sum->n_value[0] + sum_scale + sum_digits - 1;
 
-  /* Add the fraction part.  First copy the longer fraction.*/
-  if (n1bytes != n2bytes)
-    {
-      if (n1bytes > n2bytes)
-	while (n1bytes>n2bytes)
-	  { *sumptr-- = *n1ptr--; n1bytes--;}
-      else
-	while (n2bytes>n1bytes)
-	  { *sumptr-- = *n2ptr--; n2bytes--;}
-    }
+        /* Add the fraction part.  First copy the longer fraction.*/
+        if (n1bytes != n2bytes)
+        {
+            if (n1bytes > n2bytes)
+                while (n1bytes>n2bytes)
+                { *sumptr-- = *n1ptr--; n1bytes--;}
+            else
+                while (n2bytes>n1bytes)
+                { *sumptr-- = *n2ptr--; n2bytes--;}
+        }
 
-  /* Now add the remaining fraction part and equal size integer parts. */
-  n1bytes += n1->n_len;
-  n2bytes += n2->n_len;
-  carry = 0;
-  while ((n1bytes > 0) && (n2bytes > 0))
-    {
-      *sumptr = *n1ptr-- + *n2ptr-- + carry;
-      if (*sumptr > 9)
-	{
-	   carry = 1;
-	   *sumptr -= 10;
-	}
-      else
-	carry = 0;
-      sumptr--;
-      n1bytes--;
-      n2bytes--;
-    }
+        /* Now add the remaining fraction part and equal size integer parts. */
+        n1bytes += n1->n_len;
+        n2bytes += n2->n_len;
+        carry = 0;
+        while ((n1bytes > 0) && (n2bytes > 0))
+        {
+            *sumptr = *n1ptr-- + *n2ptr-- + carry;
+            if (*sumptr > 9)
+            {
+                carry = 1;
+                *sumptr -= 10;
+            }
+            else
+                carry = 0;
+            sumptr--;
+            n1bytes--;
+            n2bytes--;
+        }
 
-  /* Now add carry the longer integer part. */
-  if (n1bytes == 0)
-    { n1bytes = n2bytes; n1ptr = n2ptr; }
-  while (n1bytes-- > 0)
-    {
-      *sumptr = *n1ptr-- + carry;
-      if (*sumptr > 9)
-	{
-	   carry = 1;
-	   *sumptr -= 10;
-	 }
-      else
-	carry = 0;
-      sumptr--;
-    }
+        /* Now add carry the longer integer part. */
+        if (n1bytes == 0)
+        { n1bytes = n2bytes; n1ptr = n2ptr; }
+        while (n1bytes-- > 0)
+        {
+            *sumptr = *n1ptr-- + carry;
+            if (*sumptr > 9)
+            {
+                carry = 1;
+                *sumptr -= 10;
+            }
+            else
+                carry = 0;
+            sumptr--;
+        }
 
-  /* Set final carry. */
-  if (carry == 1)
-    *sumptr += 1;
-  
-  /* Adjust sum and return. */
-  _rm_leading_zeros (sum);
-  return sum;  
-}
+        /* Set final carry. */
+        if (carry == 1)
+        *sumptr += 1;
+
+        /* Adjust sum and return. */
+        _rm_leading_zeros (sum);
+        return sum;
+        }
 
 
 /* Perform subtraction: N2 is subtracted from N1 and the value is
    returned.  The signs of N1 and N2 are ignored.  Also, N1 is
    assumed to be larger than N2.  */
 
-static bc_num
-_do_sub (bc_num n1, bc_num n2)
-{
-  bc_num diff;
-  int diff_scale, diff_len;
-  int min_scale, min_len;
-  char * n1ptr;
-  char * n2ptr;
-  char * diffptr;
-  int borrow, count, val;
+static bc_num _do_sub(bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>)) : itype(_Ptr<bc_struct>)
+        {
+                bc_num diff;
+        int diff_scale, diff_len;
+        int min_scale, min_len;
+        char * n1ptr;
+        char * n2ptr;
+        char * diffptr;
+        int borrow, count, val;
 
-  /* Allocate temporary storage. */
-  diff_len = MAX (n1->n_len, n2->n_len);
-  diff_scale = MAX (n1->n_scale, n2->n_scale);
-  min_len = MIN  (n1->n_len, n2->n_len);
-  min_scale = MIN (n1->n_scale, n2->n_scale);
-  diff = new_num (diff_len, diff_scale);
+        /* Allocate temporary storage. */
+        diff_len = MAX (n1->n_len, n2->n_len);
+        diff_scale = MAX (n1->n_scale, n2->n_scale);
+        min_len = MIN  (n1->n_len, n2->n_len);
+        min_scale = MIN (n1->n_scale, n2->n_scale);
+        diff = new_num (diff_len, diff_scale);
 
-  /* Initialize the subtract. */
-  n1ptr = &n1->n_value[0] + n1->n_len + n1->n_scale -1;
-  n2ptr = &n2->n_value[0] + n2->n_len + n2->n_scale -1;
-  diffptr = &diff->n_value[0] + diff_len + diff_scale -1;
+        /* Initialize the subtract. */
+        n1ptr = &n1->n_value[0] + n1->n_len + n1->n_scale -1;
+        n2ptr = &n2->n_value[0] + n2->n_len + n2->n_scale -1;
+        diffptr = &diff->n_value[0] + diff_len + diff_scale -1;
 
-  /* Subtract the numbers. */
-  borrow = 0;
-  
-  /* Take care of the longer scaled number. */
-  if (n1->n_scale != min_scale)
-    {
-      /* n1 has the longer scale */
-      for (count = n1->n_scale - min_scale; count > 0; count--)
-	*diffptr-- = *n1ptr--;
-    }
-  else
-    {
-      /* n2 has the longer scale */
-      for (count = n2->n_scale - min_scale; count > 0; count--)
-	{
-	  val = - *n2ptr-- - borrow;
-	  if (val < 0)
-	    {
-	      val += 10;
-	      borrow = 1;
-	    }
-	  else
-	    borrow = 0;
-	  *diffptr-- = val;
-	}
-    }
-  
-  /* Now do the equal length scale and integer parts. */
-  
-  for (count = 0; count < min_len + min_scale; count++)
-    {
-      val = *n1ptr-- - *n2ptr-- - borrow;
-      if (val < 0)
-	{
-	  val += 10;
-	  borrow = 1;
-	}
-      else
-	borrow = 0;
-      *diffptr-- = val;
-    }
+        /* Subtract the numbers. */
+        borrow = 0;
 
-  /* If n1 has more digits then n2, we now do that subtract. */
-  if (diff_len != min_len)
-    {
-      for (count = diff_len - min_len; count > 0; count--)
-	{
-	  val = *n1ptr-- - borrow;
-	  if (val < 0)
-	    {
-	      val += 10;
-	      borrow = 1;
-	    }
-	  else
-	    borrow = 0;
-	  *diffptr-- = val;
-	}
-    }
+        /* Take care of the longer scaled number. */
+        if (n1->n_scale != min_scale)
+        {
+            /* n1 has the longer scale */
+            for (count = n1->n_scale - min_scale; count > 0; count--)
+                *diffptr-- = *n1ptr--;
+        }
+        else
+        {
+            /* n2 has the longer scale */
+            for (count = n2->n_scale - min_scale; count > 0; count--)
+            {
+                val = - *n2ptr-- - borrow;
+                if (val < 0)
+                {
+                    val += 10;
+                    borrow = 1;
+                }
+                else
+                    borrow = 0;
+                *diffptr-- = val;
+            }
+        }
 
-  /* Clean up and return. */
-  _rm_leading_zeros (diff);
-  return diff;
-}
+        /* Now do the equal length scale and integer parts. */
+
+        for (count = 0; count < min_len + min_scale; count++)
+        {
+            val = *n1ptr-- - *n2ptr-- - borrow;
+            if (val < 0)
+            {
+                val += 10;
+                borrow = 1;
+            }
+            else
+                borrow = 0;
+            *diffptr-- = val;
+        }
+
+        /* If n1 has more digits then n2, we now do that subtract. */
+        if (diff_len != min_len)
+        {
+            for (count = diff_len - min_len; count > 0; count--)
+            {
+                val = *n1ptr-- - borrow;
+                if (val < 0)
+                {
+                    val += 10;
+                    borrow = 1;
+                }
+                else
+                    borrow = 0;
+                *diffptr-- = val;
+            }
+        }
+
+        /* Clean up and return. */
+        _rm_leading_zeros (diff);
+        return diff;
+        }
 
 
 /* Here is the full add routine that takes care of negative numbers.
    N1 is added to N2 and the result placed into RESULT. */
 
 void
-bc_add ( bc_num n1, bc_num n2, bc_num * result)
+bc_add (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result)
 {
-  bc_num sum;
-  int cmp_res;
+bc_num sum;
+int cmp_res;
 
-  if (n1->n_sign == n2->n_sign)
-    {
-      sum = _do_add (n1, n2);
-      sum->n_sign = n1->n_sign;
-    }
-  else
-    {
-      /* subtraction must be done. */
-      cmp_res = _do_compare (n1, n2, FALSE, FALSE);  /* Compare magnitudes. */
-      switch (cmp_res)
-	{
-	case -1:
-	  /* n1 is less than n2, subtract n1 from n2. */
-	  sum = _do_sub (n2, n1);
-	  sum->n_sign = n2->n_sign;
-	  break;
-	case  0:
-	  /* They are equal! return zero! */
-	  sum = copy_num (_zero_);   
-	  break;
-	case  1:
-	  /* n2 is less than n1, subtract n2 from n1. */
-	  sum = _do_sub (n1, n2);
-	  sum->n_sign = n1->n_sign;
-	}
-    }
+if (n1->n_sign == n2->n_sign)
+{
+sum = _do_add (n1, n2);
+sum->n_sign = n1->n_sign;
+}
+else
+{
+/* subtraction must be done. */
+cmp_res = _do_compare (n1, n2, FALSE, FALSE);  /* Compare magnitudes. */
+switch (cmp_res)
+{
+case -1:
+/* n1 is less than n2, subtract n1 from n2. */
+sum = _do_sub (n2, n1);
+sum->n_sign = n2->n_sign;
+break;
+case  0:
+/* They are equal! return zero! */
+sum = copy_num (_zero_);
+break;
+case  1:
+/* n2 is less than n1, subtract n2 from n1. */
+sum = _do_sub (n1, n2);
+sum->n_sign = n1->n_sign;
+}
+}
 
-  /* Clean up and return. */
-  free_num (result);
-  *result = sum;
+/* Clean up and return. */
+free_num (result);
+*result = sum;
 }
 
 
@@ -585,42 +579,42 @@ bc_add ( bc_num n1, bc_num n2, bc_num * result)
    N2 is subtracted from N1 and the result placed in RESULT. */
 
 void
-bc_sub ( bc_num n1, bc_num n2, bc_num * result)
+bc_sub (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result)
 {
-  bc_num diff;
-  int cmp_res;
+bc_num diff;
+int cmp_res;
 
-  if (n1->n_sign != n2->n_sign)
-    {
-      diff = _do_add (n1, n2);
-      diff->n_sign = n1->n_sign;
-    }
-  else
-    {
-      /* subtraction must be done. */
-      cmp_res = _do_compare (n1, n2, FALSE, FALSE);  /* Compare magnitudes. */
-      switch (cmp_res)
-	{
-	case -1:
-	  /* n1 is less than n2, subtract n1 from n2. */
-	  diff = _do_sub (n2, n1);
-	  diff->n_sign = (n2->n_sign == PLUS ? MINUS : PLUS);
-	  break;
-	case  0:
-	  /* They are equal! return zero! */
-	  diff = copy_num (_zero_);   
-	  break;
-	case  1:
-	  /* n2 is less than n1, subtract n2 from n1. */
-	  diff = _do_sub (n1, n2);
-	  diff->n_sign = n1->n_sign;
-	  break;
-	}
-    }
-  
-  /* Clean up and return. */
-  free_num (result);
-  *result = diff;
+if (n1->n_sign != n2->n_sign)
+{
+diff = _do_add (n1, n2);
+diff->n_sign = n1->n_sign;
+}
+else
+{
+/* subtraction must be done. */
+cmp_res = _do_compare (n1, n2, FALSE, FALSE);  /* Compare magnitudes. */
+switch (cmp_res)
+{
+case -1:
+/* n1 is less than n2, subtract n1 from n2. */
+diff = _do_sub (n2, n1);
+diff->n_sign = (n2->n_sign == PLUS ? MINUS : PLUS);
+break;
+case  0:
+/* They are equal! return zero! */
+diff = copy_num (_zero_);
+break;
+case  1:
+/* n2 is less than n1, subtract n2 from n1. */
+diff = _do_sub (n1, n2);
+diff->n_sign = n1->n_sign;
+break;
+}
+}
+
+/* Clean up and return. */
+free_num (result);
+*result = diff;
 }
 
 
@@ -629,64 +623,64 @@ bc_sub ( bc_num n1, bc_num n2, bc_num * result)
    */
 
 void
-bc_multiply (bc_num n1, bc_num n2, bc_num * prod, int scale)
+bc_multiply (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> prod, int scale)
 {
-  bc_num pval;			/* For the working storage. */
-  char * n1ptr;
-  char * n2ptr;
-  char *pvptr;			/* Work pointers. */
-  char * n1end;
-  char * n2end;		/* To the end of n1 and n2. */
+bc_num pval;			/* For the working storage. */
+char * n1ptr;
+char * n2ptr;
+char *pvptr;			/* Work pointers. */
+char * n1end;
+char * n2end;		/* To the end of n1 and n2. */
 
-  int indx;
-  int len1, len2, total_digits;
-  long sum;
-  int full_scale, prod_scale;
-  int toss;
-  int tmpI;
+int indx;
+int len1, len2, total_digits;
+long sum;
+int full_scale, prod_scale;
+int toss;
+int tmpI;
 
-  /* Initialize things. */
-  len1 = n1->n_len + n1->n_scale;
-  len2 = n2->n_len + n2->n_scale;
-  total_digits = len1 + len2;
-  full_scale = n1->n_scale + n2->n_scale;
-  prod_scale = MIN(full_scale,MAX(scale,MAX(n1->n_scale,n2->n_scale)));
-  toss = full_scale - prod_scale;
-  pval =  new_num (total_digits-full_scale, prod_scale);
-  pval->n_sign = ( n1->n_sign == n2->n_sign ? PLUS : MINUS );
-  n1end = &n1->n_value[0] + len1 - 1;
-  n2end = &n2->n_value[0] + len2 - 1;
-  tmpI = total_digits - toss - 1;
-  pvptr = pval->n_value + tmpI;
-  sum = 0;
+/* Initialize things. */
+len1 = n1->n_len + n1->n_scale;
+len2 = n2->n_len + n2->n_scale;
+total_digits = len1 + len2;
+full_scale = n1->n_scale + n2->n_scale;
+prod_scale = MIN(full_scale,MAX(scale,MAX(n1->n_scale,n2->n_scale)));
+toss = full_scale - prod_scale;
+pval =  new_num (total_digits-full_scale, prod_scale);
+pval->n_sign = ( n1->n_sign == n2->n_sign ? PLUS : MINUS );
+n1end = &n1->n_value[0] + len1 - 1;
+n2end = &n2->n_value[0] + len2 - 1;
+tmpI = total_digits - toss - 1;
+pvptr = pval->n_value + tmpI;
+sum = 0;
 
-  /* Here are the loops... */
-  for (indx = 0; indx < toss; indx++)
-    {
-      n1ptr = n1end - MAX(0, indx-len2+1);
-      n2ptr = n2end - MIN(indx, len2-1);
-      while ((n1ptr >= n1->n_value) && (n2ptr <= n2end))
-	sum += *n1ptr-- * *n2ptr++;
-      sum = sum / 10;
-    }
-  for ( ; indx < total_digits-1; indx++)
-    {
-      n1ptr = n1end - MAX(0, indx-len2+1);
-      n2ptr = n2end - MIN(indx, len2-1);
-      while ((n1ptr >= n1->n_value) && (n2ptr <= n2end)) {
-	sum += *n1ptr-- * *n2ptr++;
-      }
-      *pvptr-- = sum % 10;
-      sum = sum / 10;
-    }
-  *pvptr-- = sum;
+/* Here are the loops... */
+for (indx = 0; indx < toss; indx++)
+{
+n1ptr = n1end - MAX(0, indx-len2+1);
+n2ptr = n2end - MIN(indx, len2-1);
+while ((n1ptr >= n1->n_value) && (n2ptr <= n2end))
+sum += *n1ptr-- * *n2ptr++;
+sum = sum / 10;
+}
+for ( ; indx < total_digits-1; indx++)
+{
+n1ptr = n1end - MAX(0, indx-len2+1);
+n2ptr = n2end - MIN(indx, len2-1);
+while ((n1ptr >= n1->n_value) && (n2ptr <= n2end)) {
+sum += *n1ptr-- * *n2ptr++;
+}
+*pvptr-- = sum % 10;
+sum = sum / 10;
+}
+*pvptr-- = sum;
 
-  /* Assign to prod and clean up the number. */
-  free_num (prod);
-  *prod = pval;
-  _rm_leading_zeros (*prod);
-  if (is_zero (*prod)) 
-    (*prod)->n_sign = PLUS;
+/* Assign to prod and clean up the number. */
+free_num (prod);
+*prod = pval;
+_rm_leading_zeros (*prod);
+if (is_zero (*prod))
+(*prod)->n_sign = PLUS;
 }
 
 
@@ -696,36 +690,35 @@ bc_multiply (bc_num n1, bc_num n2, bc_num * prod, int scale)
    the same pointers.  */
 
 static void
-_one_mult (char * num, int size, int digit,
-	   char * result)
+_one_mult (char *num : itype(_Ptr<char>), int size, int digit, char *result : itype(_Ptr<char>))
 {
-  int carry, value;
-  char * nptr;
-  char * rptr;
+int carry, value;
+char * nptr;
+char * rptr;
 
-  if (digit == 0)
-    memset (result, 0, size);
-  else
-    {
-      if (digit == 1)
-	memcpy (result, num, size);
-      else
-	{
-	  /* Initialize */
-	  nptr = num+size-1;
-	  rptr = result+size-1;
-	  carry = 0;
+if (digit == 0)
+memset (result, 0, size);
+else
+{
+if (digit == 1)
+memcpy<char> (result, num, size);
+else
+{
+/* Initialize */
+nptr = num+size-1;
+rptr = result+size-1;
+carry = 0;
 
-	  while (size-- > 0)
-	    {
-	      value = *nptr-- * digit + carry;
-	      *rptr-- = value % 10;
-	      carry = value / 10;
-	    }
-  
-	  if (carry != 0) *rptr = carry;
-	}
-    }
+while (size-- > 0)
+{
+value = *nptr-- * digit + carry;
+*rptr-- = value % 10;
+carry = value / 10;
+}
+
+if (carry != 0) *rptr = carry;
+}
+}
 }
 
 
@@ -735,195 +728,195 @@ _one_mult (char * num, int size, int digit,
    by zero is tried.  The algorithm is found in Knuth Vol 2. p237. */
 
 int
-bc_divide (bc_num n1, bc_num n2, bc_num * quot, int scale)
-{ 
-  bc_num qval;
-  char * num1;
-  char * num2;
-  char * ptr1;
-  char * ptr2;
-  char * n2ptr;
-  char * qptr;
-  int  scale1, val;
-  unsigned int  len1, len2, scale2, qdigits, extra, count;
-  unsigned int  qdig, qguess, borrow, carry;
-  char * mval;
-  char zero;
-  unsigned int  norm;
+bc_divide (bc_num n1 : itype(_Ptr<bc_struct>), bc_num n2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> quot, int scale)
+{
+bc_num qval;
+char * num1;
+char * num2;
+char * ptr1;
+char * ptr2;
+char * n2ptr;
+char * qptr;
+int  scale1, val;
+unsigned int  len1, len2, scale2, qdigits, extra, count;
+unsigned int  qdig, qguess, borrow, carry;
+char * mval;
+char zero;
+unsigned int  norm;
 
-  /* Test for divide by zero. */
-  if (is_zero (n2)) return -1;
+/* Test for divide by zero. */
+if (is_zero (n2)) return -1;
 
-  /* Test for divide by 1.  If it is we must truncate. */
-  if (n2->n_scale == 0)
-    {
-      if (n2->n_len == 1 && n2->n_value[0] == 1)
-	{
-	  qval = new_num (n1->n_len, scale);
-	  qval->n_sign = (n1->n_sign == n2->n_sign ? PLUS : MINUS);
-	  memset (&qval->n_value[n1->n_len],0,scale);
-	  memcpy (qval->n_value, n1->n_value,
-		  n1->n_len + MIN(n1->n_scale,scale));
-	  free_num (quot);
-	  *quot = qval;
-	}
-    }
-  
-  /* Set up the divide.  Move the decimal point on n1 by n2's scale.
-     Remember, zeros on the end of num2 are wasted effort for dividing. */
-  scale2 = n2->n_scale;
-  n2ptr = (char *) &n2->n_value[0] + n2->n_len + scale2 - 1;
-  while ((scale2 > 0) && (*n2ptr-- == 0)) scale2--;
+/* Test for divide by 1.  If it is we must truncate. */
+if (n2->n_scale == 0)
+{
+if (n2->n_len == 1 && n2->n_value[0] == 1)
+{
+qval = new_num (n1->n_len, scale);
+qval->n_sign = (n1->n_sign == n2->n_sign ? PLUS : MINUS);
+memset (&qval->n_value[n1->n_len],0,scale);
+memcpy<char> (qval->n_value, n1->n_value,
+n1->n_len + MIN(n1->n_scale,scale));
+free_num (quot);
+*quot = qval;
+}
+}
 
-  len1 = n1->n_len + scale2;
-  scale1 = n1->n_scale - scale2;
-  if (scale1 < scale)
-    extra = scale - scale1;
-  else
-    extra = 0;
-  num1 = (char *)malloc(n1->n_len+n1->n_scale+extra+2);
-  /* XXX if (num1 == NULL) out_of_memory(); */
-  memset (num1, 0, n1->n_len+n1->n_scale+extra+2);
-  memcpy (num1+1, n1->n_value, n1->n_len+n1->n_scale);
+/* Set up the divide.  Move the decimal point on n1 by n2's scale.
+   Remember, zeros on the end of num2 are wasted effort for dividing. */
+scale2 = n2->n_scale;
+n2ptr = (char *) &n2->n_value[0] + n2->n_len + scale2 - 1;
+while ((scale2 > 0) && (*n2ptr-- == 0)) scale2--;
 
-  len2 = n2->n_len + scale2;
-  num2 = (char *)malloc(len2+1);
-  /* XXX if (num2 == NULL) out_of_memory(); */
-  memcpy (num2, n2->n_value, len2);
-  *(num2+len2) = 0;
-  n2ptr = num2;
-  while (*n2ptr == 0)
-    {
-      n2ptr++;
-      len2--;
-    }
+len1 = n1->n_len + scale2;
+scale1 = n1->n_scale - scale2;
+if (scale1 < scale)
+extra = scale - scale1;
+else
+extra = 0;
+num1 = (char *)malloc<char>(n1->n_len+n1->n_scale+extra+2);
+/* XXX if (num1 == NULL) out_of_memory(); */
+memset (num1, 0, n1->n_len+n1->n_scale+extra+2);
+memcpy<char> (num1+1, n1->n_value, n1->n_len+n1->n_scale);
 
-  /* Calculate the number of quotient digits. */
-  if (len2 > len1+scale)
-    {
-      qdigits = scale+1;
-      zero = TRUE;
-    }
-  else
-    {
-      zero = FALSE;
-      if (len2>len1)
-	qdigits = scale+1;  	/* One for the zero integer part. */
-      else
-	qdigits = len1-len2+scale+1;
-    }
+len2 = n2->n_len + scale2;
+num2 = (char *)malloc<char>(len2+1);
+/* XXX if (num2 == NULL) out_of_memory(); */
+memcpy<char> (num2, n2->n_value, len2);
+*(num2+len2) = 0;
+n2ptr = num2;
+while (*n2ptr == 0)
+{
+n2ptr++;
+len2--;
+}
 
-  /* Allocate and zero the storage for the quotient. */
-  qval = new_num (qdigits-scale,scale);
-  memset (qval->n_value, 0, qdigits);
+/* Calculate the number of quotient digits. */
+if (len2 > len1+scale)
+{
+qdigits = scale+1;
+zero = TRUE;
+}
+else
+{
+zero = FALSE;
+if (len2>len1)
+qdigits = scale+1;  	/* One for the zero integer part. */
+else
+qdigits = len1-len2+scale+1;
+}
 
-  /* Allocate storage for the temporary storage mval. */
-  mval = (char *)malloc(len2+1);
-  /* XXX if (mval == NULL) out_of_memory (); */
+/* Allocate and zero the storage for the quotient. */
+qval = new_num (qdigits-scale,scale);
+memset (qval->n_value, 0, qdigits);
 
-  /* Now for the full divide algorithm. */
-  if (!zero)
-    {
-      /* Normalize */
-      norm =  10 / ((int)*n2ptr + 1);
-      if (norm != 1)
-	{
-	  _one_mult (num1, len1+scale1+extra+1, norm, num1);
-	  _one_mult (n2ptr, len2, norm, n2ptr);
-	}
+/* Allocate storage for the temporary storage mval. */
+mval = (char *)malloc<char>(len2+1);
+/* XXX if (mval == NULL) out_of_memory (); */
 
-      /* Initialize divide loop. */
-      qdig = 0;
-      if (len2 > len1)
-	qptr = (char *)&qval->n_value[0] +len2-len1;
-      else
-	qptr = (char *)&qval->n_value[0];
+/* Now for the full divide algorithm. */
+if (!zero)
+{
+/* Normalize */
+norm =  10 / ((int)*n2ptr + 1);
+if (norm != 1)
+{
+_one_mult (num1, len1+scale1+extra+1, norm, num1);
+_one_mult (n2ptr, len2, norm, n2ptr);
+}
 
-      /* Loop */
-      while (qdig <= len1+scale-len2)
-	{
-	  /* Calculate the quotient digit guess. */
-	  if (*n2ptr == num1[qdig])
-	    qguess = 9;
-	  else
-	    qguess = (num1[qdig]*10 + num1[qdig+1]) / *n2ptr;
+/* Initialize divide loop. */
+qdig = 0;
+if (len2 > len1)
+qptr = (char *)&qval->n_value[0] +len2-len1;
+else
+qptr = (char *)&qval->n_value[0];
 
-	  /* Test qguess. */
-	  if (n2ptr[1]*qguess >
-	      (num1[qdig]*10 + num1[qdig+1] - *n2ptr*qguess)*10
-	       + num1[qdig+2])
-	    {
-	      qguess--;
-	      /* And again. */
-	      if (n2ptr[1]*qguess >
-		  (num1[qdig]*10 + num1[qdig+1] - *n2ptr*qguess)*10
-		  + num1[qdig+2])
-		qguess--;
-	    }
- 
-	  /* Multiply and subtract. */
-	  borrow = 0;
-	  if (qguess != 0)
-	    {
-	      *mval = 0;
-	      _one_mult (n2ptr, len2, qguess, mval+1);
-	      ptr1 = num1+qdig+len2;
-	      ptr2 = mval+len2;
-	      for (count = 0; count < len2+1; count++)
-		{
-		  val = (int) *ptr1 - (int) *ptr2-- - borrow;
-		  if (val < 0)
-		    {
-		      val += 10;
-		      borrow = 1;
-		    }
-		  else
-		    borrow = 0;
-		  *ptr1-- = val;
-		}
-	    }
+/* Loop */
+while (qdig <= len1+scale-len2)
+{
+/* Calculate the quotient digit guess. */
+if (*n2ptr == num1[qdig])
+qguess = 9;
+else
+qguess = (num1[qdig]*10 + num1[qdig+1]) / *n2ptr;
 
-	  /* Test for negative result. */
-	  if (borrow == 1)
-	    {
-	      qguess--;
-	      ptr1 = num1+qdig+len2;
-	      ptr2 = n2ptr+len2-1;
-	      carry = 0;
-	      for (count = 0; count < len2; count++)
-		{
-		  val = (int) *ptr1 + (int) *ptr2-- + carry;
-		  if (val > 9)
-		    {
-		      val -= 10;
-		      carry = 1;
-		    }
-		  else
-		    carry = 0;
-		  *ptr1-- = val;
-		}
-	      if (carry == 1) *ptr1 = (*ptr1 + 1) % 10;
-	    }
-       
-	  /* We now know the quotient digit. */
-	  *qptr++ =  qguess;
-	  qdig++;
-	}
-    }
+/* Test qguess. */
+if (n2ptr[1]*qguess >
+(num1[qdig]*10 + num1[qdig+1] - *n2ptr*qguess)*10
++ num1[qdig+2])
+{
+qguess--;
+/* And again. */
+if (n2ptr[1]*qguess >
+(num1[qdig]*10 + num1[qdig+1] - *n2ptr*qguess)*10
++ num1[qdig+2])
+qguess--;
+}
 
-  /* Clean up and return the number. */
-  qval->n_sign = ( n1->n_sign == n2->n_sign ? PLUS : MINUS );
-  if (is_zero (qval)) qval->n_sign = PLUS;
-  _rm_leading_zeros (qval);
-  free_num (quot);
-  *quot = qval;
+/* Multiply and subtract. */
+borrow = 0;
+if (qguess != 0)
+{
+*mval = 0;
+_one_mult (n2ptr, len2, qguess, mval+1);
+ptr1 = num1+qdig+len2;
+ptr2 = mval+len2;
+for (count = 0; count < len2+1; count++)
+{
+val = (int) *ptr1 - (int) *ptr2-- - borrow;
+if (val < 0)
+{
+val += 10;
+borrow = 1;
+}
+else
+borrow = 0;
+*ptr1-- = val;
+}
+}
 
-  /* Clean up temporary storage. */
-  free(mval);
-  free(num1);
-  free(num2);
+/* Test for negative result. */
+if (borrow == 1)
+{
+qguess--;
+ptr1 = num1+qdig+len2;
+ptr2 = n2ptr+len2-1;
+carry = 0;
+for (count = 0; count < len2; count++)
+{
+val = (int) *ptr1 + (int) *ptr2-- + carry;
+if (val > 9)
+{
+val -= 10;
+carry = 1;
+}
+else
+carry = 0;
+*ptr1-- = val;
+}
+if (carry == 1) *ptr1 = (*ptr1 + 1) % 10;
+}
 
-  return 0;	/* Everything is OK. */
+/* We now know the quotient digit. */
+*qptr++ =  qguess;
+qdig++;
+}
+}
+
+/* Clean up and return the number. */
+qval->n_sign = ( n1->n_sign == n2->n_sign ? PLUS : MINUS );
+if (is_zero (qval)) qval->n_sign = PLUS;
+_rm_leading_zeros (qval);
+free_num (quot);
+*quot = qval;
+
+/* Clean up temporary storage. */
+free<char>(mval);
+free<char>(num1);
+free<char>(num2);
+
+return 0;	/* Everything is OK. */
 }
 
 
@@ -931,27 +924,27 @@ bc_divide (bc_num n1, bc_num n2, bc_num * quot, int scale)
    result in RESULT.   */
 
 int
-bc_modulo (bc_num num1, bc_num num2, bc_num * result, int scale)
+bc_modulo (bc_num num1 : itype(_Ptr<bc_struct>), bc_num num2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result, int scale)
 {
-  bc_num temp;
-  int rscale;
-  ;
+bc_num temp;
+int rscale;
+;
 
-  /* Check for correct numbers. */
-  if (is_zero (num2)) return -1;
+/* Check for correct numbers. */
+if (is_zero (num2)) return -1;
 
-  /* Calculate final scale. */
-  rscale = MAX (num1->n_scale, num2->n_scale+scale);
-  init_num (&temp);
-  
-  /* Calculate it. */
-  bc_divide (num1, num2, &temp, scale);
-  bc_multiply (temp, num2, &temp, rscale);
-  bc_sub (num1, temp, result);
-  free_num (&temp);
+/* Calculate final scale. */
+rscale = MAX (num1->n_scale, num2->n_scale+scale);
+init_num (&temp);
 
-  ;
-  return 0;	/* Everything is OK. */
+/* Calculate it. */
+bc_divide (num1, num2, &temp, scale);
+bc_multiply (temp, num2, &temp, rscale);
+bc_sub (num1, temp, result);
+free_num (&temp);
+
+;
+return 0;	/* Everything is OK. */
 }
 
 
@@ -960,152 +953,152 @@ bc_modulo (bc_num num1, bc_num num2, bc_num * result, int scale)
    only the integer part is used.  */
 
 void
-bc_raise (bc_num num1, bc_num num2, bc_num * result, int scale)
+bc_raise (bc_num num1 : itype(_Ptr<bc_struct>), bc_num num2 : itype(_Ptr<bc_struct>), _Ptr<bc_num> result, int scale)
 {
-   bc_num temp, power;
-   long exponent;
-   int rscale;
-   char neg;
-   ;
+bc_num temp, power;
+long exponent;
+int rscale;
+char neg;
+;
 
-   /* Check the exponent for scale digits and convert to a long. */
-   if (num2->n_scale != 0)
-     rt_warn ("non-zero scale in exponent");
-   exponent = num2long (num2);
-   if (exponent == 0 && (num2->n_len > 1 || num2->n_value[0] != 0))
-       rt_error ("exponent too large in raise");
+/* Check the exponent for scale digits and convert to a long. */
+if (num2->n_scale != 0)
+rt_warn ("non-zero scale in exponent");
+exponent = num2long (num2);
+if (exponent == 0 && (num2->n_len > 1 || num2->n_value[0] != 0))
+rt_error ("exponent too large in raise");
 
-   /* Special case if exponent is a zero. */
-   if (exponent == 0)
-     {
-       free_num (result);
-       *result = copy_num (_one_);
-       ;
-       return;
-     }
+/* Special case if exponent is a zero. */
+if (exponent == 0)
+{
+free_num (result);
+*result = copy_num (_one_);
+;
+return;
+}
 
-   /* Other initializations. */
-   if (exponent < 0)
-     {
-       neg = TRUE;
-       exponent = -exponent;
-       rscale = scale;
-     }
-   else
-     {
-       neg = FALSE;
-       rscale = MIN (num1->n_scale*exponent, MAX(scale, num1->n_scale));
-     }
-   temp = copy_num (_one_);
-   power = copy_num (num1);
+/* Other initializations. */
+if (exponent < 0)
+{
+neg = TRUE;
+exponent = -exponent;
+rscale = scale;
+}
+else
+{
+neg = FALSE;
+rscale = MIN (num1->n_scale*exponent, MAX(scale, num1->n_scale));
+}
+temp = copy_num (_one_);
+power = copy_num (num1);
 
-   /* Do the calculation. */
-   while (exponent != 0)
-     {
-       if (exponent & 1 != 0) 
-	 bc_multiply (temp, power, &temp, rscale);
-       bc_multiply (power, power, &power, rscale);
-       exponent = exponent >> 1;
-     }
-   
-   /* Assign the value. */
-   if (neg)
-     {
-       bc_divide (_one_, temp, result, rscale);
-       free_num (&temp);
-     }
-   else
-     {
-       free_num (result);
-       *result = temp;
-     }
-   free_num (&power);
-   ;
+/* Do the calculation. */
+while (exponent != 0)
+{
+if (exponent & 1 != 0)
+bc_multiply (temp, power, &temp, rscale);
+bc_multiply (power, power, &power, rscale);
+exponent = exponent >> 1;
+}
+
+/* Assign the value. */
+if (neg)
+{
+bc_divide (_one_, temp, result, rscale);
+free_num (&temp);
+}
+else
+{
+free_num (result);
+*result = temp;
+}
+free_num (&power);
+;
 }
 
 
 /* Take the square root NUM and return it in NUM with SCALE digits
    after the decimal place. */
 
-int 
-bc_sqrt (bc_num * num, int scale)
+int
+bc_sqrt (_Ptr<bc_num> num, int scale)
 {
-  int rscale, cmp_res, done;
-  int cscale;
-  bc_num guess, guess1, point5;
-  ;
-
-  /* Initial checks. */
-  cmp_res = bc_compare (*num, _zero_);
-  if (cmp_res < 0) {
+    int rscale, cmp_res, done;
+    int cscale;
+    bc_num guess, guess1, point5;
     ;
-    return 0;		/* error */
-  }
-  else
-    {
-      if (cmp_res == 0)
-	{
-	  free_num (num);
-	  *num = copy_num (_zero_);
-          ;
-	  return 1;
-	}
+
+    /* Initial checks. */
+    cmp_res = bc_compare (*num, _zero_);
+    if (cmp_res < 0) {
+        ;
+        return 0;		/* error */
     }
-  cmp_res = bc_compare (*num, _one_);
-  if (cmp_res == 0)
+    else
     {
-      free_num (num);
-      *num = copy_num (_one_);
-      ;
-      return 1;
+        if (cmp_res == 0)
+        {
+            free_num (num);
+            *num = copy_num (_zero_);
+            ;
+            return 1;
+        }
+    }
+    cmp_res = bc_compare (*num, _one_);
+    if (cmp_res == 0)
+    {
+        free_num (num);
+        *num = copy_num (_one_);
+        ;
+        return 1;
     }
 
-  /* Initialize the variables. */
-  rscale = MAX (scale, (*num)->n_scale);
-  cscale = rscale + 2;
-  init_num (&guess);
-  init_num (&guess1);
-  point5 = new_num (1,1);
-  point5->n_value[1] = 5;
-  
-  
-  /* Calculate the initial guess. */
-  if (cmp_res < 0)
-    /* The number is between 0 and 1.  Guess should start at 1. */
-    guess = copy_num (_one_);
-  else
-    {
-      /* The number is greater than 1.  Guess should start at 10^(exp/2). */
-      int2num (&guess,10);
-      int2num (&guess1,(*num)->n_len);
-      bc_multiply (guess1, point5, &guess1, rscale);
-      guess1->n_scale = 0;
-      bc_raise (guess, guess1, &guess, rscale);
-      free_num (&guess1);
-    }
-  
-  /* Find the square root using Newton's algorithm. */
-  done = FALSE;
-  while (!done)
-    {
-      free_num (&guess1);
-      guess1 = copy_num (guess);
-      bc_divide (*num,guess,&guess,cscale);
-      bc_add (guess,guess1,&guess);
-      bc_multiply (guess,point5,&guess,cscale);
-      cmp_res = _do_compare (guess,guess1,FALSE,TRUE);
-      if (cmp_res == 0) done = TRUE;
-    }
-  
-  /* Assign the number and clean up. */
-  free_num (num);
-  bc_divide (guess,_one_,num,rscale);
-  free_num (&guess);
-  free_num (&guess1);
-  free_num (&point5);
+    /* Initialize the variables. */
+    rscale = MAX (scale, (*num)->n_scale);
+    cscale = rscale + 2;
+    init_num (&guess);
+    init_num (&guess1);
+    point5 = new_num (1,1);
+    point5->n_value[1] = 5;
 
-  ;
-  return 1;
+
+    /* Calculate the initial guess. */
+    if (cmp_res < 0)
+        /* The number is between 0 and 1.  Guess should start at 1. */
+        guess = copy_num (_one_);
+    else
+    {
+        /* The number is greater than 1.  Guess should start at 10^(exp/2). */
+        int2num (&guess,10);
+        int2num (&guess1,(*num)->n_len);
+        bc_multiply (guess1, point5, &guess1, rscale);
+        guess1->n_scale = 0;
+        bc_raise (guess, guess1, &guess, rscale);
+        free_num (&guess1);
+    }
+
+    /* Find the square root using Newton's algorithm. */
+    done = FALSE;
+    while (!done)
+    {
+        free_num (&guess1);
+        guess1 = copy_num (guess);
+        bc_divide (*num,guess,&guess,cscale);
+        bc_add (guess,guess1,&guess);
+        bc_multiply (guess,point5,&guess,cscale);
+        cmp_res = _do_compare (guess,guess1,FALSE,TRUE);
+        if (cmp_res == 0) done = TRUE;
+    }
+
+    /* Assign the number and clean up. */
+    free_num (num);
+    bc_divide (guess,_one_,num,rscale);
+    free_num (&guess);
+    free_num (&guess1);
+    free_num (&point5);
+
+    ;
+    return 1;
 }
 
 
@@ -1114,8 +1107,8 @@ bc_sqrt (bc_num * num, int scale)
 
 /* This structure is used for saving digits in the conversion process. */
 typedef struct stk_rec {
-	long  digit;
-	struct stk_rec * next;
+    long  digit;
+    _Ptr<struct stk_rec> next;
 } stk_rec;
 
 /* The reference string for digits. */
@@ -1128,132 +1121,132 @@ char ref_str[] = "0123456789ABCDEF";
    is the actual routine for writing the characters. */
 
 void
-out_long (long val, int size, int space, void (*out_char)(int))
+out_long (long val, int size, int space, _Ptr<void (int)> out_char)
 {
-  char digits[40];
-  int len, ix;
+    char digits[40];
+    int len, ix;
 
-  if (space) (*out_char) (' ');
-  sprintf (digits, "%ld", val);
-  len = strlen (digits);
-  while (size > len)
+    if (space) (*out_char) (' ');
+    sprintf (digits, "%ld", val);
+    len = strlen (digits);
+    while (size > len)
     {
-      (*out_char) ('0');
-      size--;
+        (*out_char) ('0');
+        size--;
     }
-  for (ix=0; ix < len; ix++)
-    (*out_char) (digits[ix]);
+    for (ix=0; ix < len; ix++)
+        (*out_char) (digits[ix]);
 }
 
 /* Output of a bcd number.  NUM is written in base O_BASE using OUT_CHAR
    as the routine to do the actual output of the characters. */
 
 void
-out_num (bc_num num, int o_base, void (*out_char)(int))
+out_num (bc_num num : itype(_Ptr<bc_struct>), int o_base, _Ptr<void (int)> out_char)
 {
-  char * nptr;
-  int  index, fdigit, pre_space;
-  stk_rec * digits;
-  stk_rec * temp;
-  bc_num int_part, frac_part, base, cur_dig, t_num, max_o_digit;
-  ;
+char * nptr;
+int  index, fdigit, pre_space;
+_Ptr<stk_rec> digits = ((void *)0);
+_Ptr<stk_rec> temp = ((void *)0);
+bc_num int_part, frac_part, base, cur_dig, t_num, max_o_digit;
+;
 
-  /* The negative sign if needed. */
-  if (num->n_sign == MINUS) (*out_char) ('-');
+/* The negative sign if needed. */
+if (num->n_sign == MINUS) (*out_char) ('-');
 
-  /* Output the number. */
-  if (is_zero (num))
-    (*out_char) ('0');
-  else
-    if (o_base == 10)
-      {
-	/* The number is in base 10, do it the fast way. */
-	nptr = &num->n_value[0];
-	if (num->n_len > 1 || *nptr != 0)
-	  for (index=num->n_len; index>0; index--)
-	    (*out_char) (BCD_CHAR(*nptr++));
-	else
-	  nptr++;
-	
-	/* Now the fraction. */
-	if (num->n_scale > 0)
-	  {
-	    (*out_char) ('.');
-	    for (index=0; index<num->n_scale; index++)
-	      (*out_char) (BCD_CHAR(*nptr++));
-	  }
-      }
-    else
-      {
-	/* The number is some other base. */
-	digits = NULL;
-	init_num (&int_part);
-	bc_divide (num, _one_, &int_part, 0);
-	init_num (&frac_part);
-	init_num (&cur_dig);
-	init_num (&base);
-	bc_sub (num, int_part, &frac_part);
-	int2num (&base, o_base);
-	init_num (&max_o_digit);
-	int2num (&max_o_digit, o_base-1);
+/* Output the number. */
+if (is_zero (num))
+(*out_char) ('0');
+else
+if (o_base == 10)
+{
+/* The number is in base 10, do it the fast way. */
+nptr = &num->n_value[0];
+if (num->n_len > 1 || *nptr != 0)
+for (index=num->n_len; index>0; index--)
+(*out_char) (BCD_CHAR(*nptr++));
+else
+nptr++;
+
+/* Now the fraction. */
+if (num->n_scale > 0)
+{
+(*out_char) ('.');
+for (index=0; index<num->n_scale; index++)
+(*out_char) (BCD_CHAR(*nptr++));
+}
+}
+else
+{
+/* The number is some other base. */
+digits = NULL;
+init_num (&int_part);
+bc_divide (num, _one_, &int_part, 0);
+init_num (&frac_part);
+init_num (&cur_dig);
+init_num (&base);
+bc_sub (num, int_part, &frac_part);
+int2num (&base, o_base);
+init_num (&max_o_digit);
+int2num (&max_o_digit, o_base-1);
 
 
-	/* Get the digits of the integer part and push them on a stack. */
-	while (!is_zero (int_part))
-	  {
-	    bc_modulo (int_part, base, &cur_dig, 0);
-	    temp = (stk_rec *)malloc(sizeof(stk_rec));
-	    /* XXX if (temp == NULL) out_of_memory(); */
-	    temp->digit = num2long (cur_dig);
-	    temp->next = digits;
-	    digits = temp;
-	    bc_divide (int_part, base, &int_part, 0);
-	  }
+/* Get the digits of the integer part and push them on a stack. */
+while (!is_zero (int_part))
+{
+bc_modulo (int_part, base, &cur_dig, 0);
+temp = (_Ptr<stk_rec>)malloc<stk_rec>(sizeof(stk_rec));
+/* XXX if (temp == NULL) out_of_memory(); */
+temp->digit = num2long (cur_dig);
+temp->next = digits;
+digits = temp;
+bc_divide (int_part, base, &int_part, 0);
+}
 
-	/* Print the digits on the stack. */
-	if (digits != NULL)
-	  {
-	    /* Output the digits. */
-	    while (digits != NULL)
-	      {
-		temp = digits;
-		digits = digits->next;
-		if (o_base <= 16) 
-		  (*out_char) (ref_str[ (int) temp->digit]);
-		else
-		  out_long (temp->digit, max_o_digit->n_len, 1, out_char);
-		free(temp);
-	      }
-	  }
+/* Print the digits on the stack. */
+if (digits != NULL)
+{
+/* Output the digits. */
+while (digits != NULL)
+{
+temp = digits;
+digits = digits->next;
+if (o_base <= 16)
+(*out_char) (ref_str[ (int) temp->digit]);
+else
+out_long (temp->digit, max_o_digit->n_len, 1, out_char);
+free<stk_rec>(temp);
+}
+}
 
-	/* Get and print the digits of the fraction part. */
-	if (num->n_scale > 0)
-	  {
-	    (*out_char) ('.');
-	    pre_space = 0;
-	    t_num = copy_num (_one_);
-	    while (t_num->n_len <= num->n_scale) {
-	      bc_multiply (frac_part, base, &frac_part, num->n_scale);
-	      fdigit = num2long (frac_part);
-	      int2num (&int_part, fdigit);
-	      bc_sub (frac_part, int_part, &frac_part);
-	      if (o_base <= 16)
-		(*out_char) (ref_str[fdigit]);
-	      else {
-		out_long (fdigit, max_o_digit->n_len, pre_space, out_char);
-		pre_space = 1;
-	      }
-	      bc_multiply (t_num, base, &t_num, 0);
-	    }
-	  }
-    
-	/* Clean up. */
-	free_num (&int_part);
-	free_num (&frac_part);
-	free_num (&base);
-	free_num (&cur_dig);
-      }
-      ;
+/* Get and print the digits of the fraction part. */
+if (num->n_scale > 0)
+{
+(*out_char) ('.');
+pre_space = 0;
+t_num = copy_num (_one_);
+while (t_num->n_len <= num->n_scale) {
+bc_multiply (frac_part, base, &frac_part, num->n_scale);
+fdigit = num2long (frac_part);
+int2num (&int_part, fdigit);
+bc_sub (frac_part, int_part, &frac_part);
+if (o_base <= 16)
+(*out_char) (ref_str[fdigit]);
+else {
+out_long (fdigit, max_o_digit->n_len, pre_space, out_char);
+pre_space = 1;
+}
+bc_multiply (t_num, base, &t_num, 0);
+}
+}
+
+/* Clean up. */
+free_num (&int_part);
+free_num (&frac_part);
+free_num (&base);
+free_num (&cur_dig);
+}
+;
 }
 
 
